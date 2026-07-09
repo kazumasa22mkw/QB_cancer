@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>QB風 スマホ演習アプリ</title>
+<title>medilink QB形式 - 過去問演習Webアプリ</title>
 <style>
     :root {
         --primary: #0056b3;
         --correct: #d9534f;
         --bg: #f4f5f7;
+        --card-border: #dee2e6;
     }
     body {
-        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
         background: var(--bg);
         color: #333;
         margin: 0;
         padding: 0;
-        /* タップした時のグレーのハイライトを消す */
-        -webkit-tap-highlight-color: transparent; 
+        -webkit-tap-highlight-color: transparent;
     }
 
-    /* 上部ヘッダー（スクロールしても固定） */
+    /* 上部ヘッダー */
     .header {
         background: var(--primary);
         color: #fff;
-        padding: 15px;
+        padding: 12px 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -35,51 +35,85 @@
     }
     .header select {
         padding: 8px;
-        border-radius: 4px;
+        border-radius: 6px;
         border: none;
         max-width: 65%;
         font-size: 14px;
         background: #fff;
+        font-weight: bold;
+        color: #333;
     }
     .progress {
         font-weight: bold;
         font-size: 15px;
+        white-space: nowrap;
     }
 
-    /* メインエリア（下部バーに被らないように余白） */
+    /* メインコンテナ */
     .container {
-        padding: 20px 15px 90px;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px 15px 100px;
+    }
+    .q-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid var(--card-border);
+    }
+    .q-cat-tag {
+        display: inline-block;
+        background: #e8f4ff;
+        color: var(--primary);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 12px;
     }
     .q-text {
         font-size: 16px;
         font-weight: bold;
-        margin-bottom: 25px;
         line-height: 1.6;
+        margin-bottom: 20px;
+        white-space: pre-wrap;
     }
 
-    /* 選択肢（スマホでタップしやすい特大サイズ） */
-    .options { list-style: none; padding: 0; margin: 0 0 25px; }
+    /* 選択肢リスト */
+    .options {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px;
+    }
     .opt-label {
         display: flex;
         align-items: center;
-        padding: 18px 15px;
+        padding: 16px 15px;
         margin-bottom: 12px;
         background: #fff;
-        border: 2px solid #dee2e6;
+        border: 2px solid #e9ecef;
         border-radius: 10px;
-        font-size: 16px;
-        transition: 0.2s;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .opt-label:hover {
+        background: #f8f9fa;
     }
     .opt-label.selected {
         border-color: var(--primary);
         background: #e8f4ff;
+        font-weight: bold;
     }
     .opt-label input {
         margin-right: 15px;
-        transform: scale(1.6);
+        transform: scale(1.5);
+        cursor: pointer;
     }
 
-    /* 解答ボタン */
+    /* アクションボタン */
     .btn {
         background: #28a745;
         color: #fff;
@@ -90,20 +124,29 @@
         font-weight: bold;
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
+        cursor: pointer;
+        transition: background 0.2s;
     }
-    .btn:active { background: #218838; transform: translateY(2px); }
+    .btn:active {
+        background: #218838;
+        transform: translateY(1px);
+    }
 
     /* 解説エリア */
     .exp-area {
         display: none;
-        background: #fff;
-        padding: 20px 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-top: 20px;
+        border-top: 2px dashed #dee2e6;
+        padding-top: 20px;
     }
-    .exp-area.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    .exp-area.active {
+        display: block;
+        animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
     
     .badge {
         display: inline-block;
@@ -119,257 +162,88 @@
     
     .ans-box {
         background: #fff3cd;
-        padding: 12px;
+        padding: 14px;
         border-left: 5px solid #ffc107;
         margin-bottom: 20px;
         font-weight: bold;
         font-size: 15px;
         border-radius: 4px;
+        line-height: 1.5;
+    }
+    .exp-text-title {
+        color: var(--primary);
+        margin: 0 0 10px;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 5px;
+        font-size: 16px;
+    }
+    .exp-main-text {
+        line-height: 1.6;
+        font-size: 15px;
+        white-space: pre-wrap;
     }
     
-    /* 下部ナビゲーション（画面下にピタッと固定） */
+    /* 下部ナビゲーション */
     .nav-bar {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        background: #f8f9fa;
-        border-top: 1px solid #ddd;
+        background: #ffffff;
+        border-top: 1px solid #dee2e6;
         display: flex;
         padding: 12px 15px;
         justify-content: space-between;
-        /* iPhoneのホームバー(下部の線)を避ける */
         padding-bottom: calc(12px + env(safe-area-inset-bottom));
         box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        z-index: 99;
     }
     .nav-btn {
         background: #6c757d;
         color: #fff;
         border: none;
-        padding: 14px 20px;
+        padding: 14px 0;
         border-radius: 8px;
         font-weight: bold;
         font-size: 15px;
         width: 48%;
+        cursor: pointer;
+        text-align: center;
     }
     .nav-btn.next { background: var(--primary); }
-    .nav-btn:disabled { background: #ccc; opacity: 0.7; }
+    .nav-btn:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; opacity: 0.8; }
 </style>
 </head>
 <body>
 
 <div class="header">
     <select id="cat-sel" onchange="filterCat()">
-        <option value="all">全分野を表示</option>
+        <option value="all">全分野（まとめて演習）</option>
     </select>
     <div class="progress"><span id="q-num">1</span> / <span id="q-total">-</span></div>
 </div>
 
 <div class="container">
-    <div class="q-text" id="q-text"></div>
-    <ul class="options" id="opt-list"></ul>
-    <button class="btn" id="submit-btn" onclick="check()">解答・解説を見る</button>
-    
-    <div class="exp-area" id="exp-area">
-        <div id="badge" class="badge"></div>
-        <div class="ans-box">
-            正解：<span id="correct-ans" style="color:var(--correct); font-size:1.2em;"></span><br>
-            あなたの解答：<span id="user-ans"></span>
+    <div class="q-card">
+        <div id="q-cat" class="q-cat-tag"></div>
+        <div class="q-text" id="q-text"></div>
+        <ul class="options" id="opt-list"></ul>
+        <button class="btn" id="submit-btn" onclick="check()">解答・解説を見る</button>
+        
+        <div class="exp-area" id="exp-area">
+            <div id="badge" class="badge"></div>
+            <div class="ans-box">
+                正解：<span id="correct-ans" style="color:var(--correct); font-size:1.1em;"></span><br>
+                あなたの解答：<span id="user-ans"></span>
+            </div>
+            <h4 class="exp-text-title">【解説】</h4>
+            <div id="exp-text" class="exp-main-text"></div>
         </div>
-        <h4 style="color:var(--primary); margin:0 0 10px; border-bottom:1px solid #eee; padding-bottom:5px;">【解説】</h4>
-        <div id="exp-text" style="line-height:1.6; font-size:15px; white-space:pre-wrap;"></div>
     </div>
-</div>
-
-<div class="nav-bar">
-    <button class="nav-btn" id="prev-btn" onclick="go(-1)">＜ 前の問題</button>
-    <button class="nav-btn next" id="next-btn" onclick="go(1)">次の問題 ＞</button>
 </div>
 
 <script>
 // =====================================
-// 問題データ (スマホ用に最適化して抜粋)
+// ドキュメントから抽出した全問題データ
 // =====================================
-const data = [
-    {
-        cat: "1. がんの基礎生物学",
-        text: "BCR-ABL キメラ遺伝子産物の作用について正しいものを1つ選べ。",
-        type: "radio",
-        opts: [
-            { id: "1", text: "1. 転写を促進" },
-            { id: "2", text: "2. 異常な転写因子として転写を抑制" },
-            { id: "3", text: "3. 細胞シグナル増強" },
-            { id: "4", text: "4. 細胞死を引き起こす" }
-        ],
-        ans: ["3"],
-        exp: "BCR-ABLは恒常的に活性化されたチロシンキナーゼであり、異常な細胞増殖シグナルを増強し、アポトーシスを抑制します（慢性骨髄性白血病などの原因）。"
-    },
-    {
-        cat: "1. がんの基礎生物学",
-        text: "発がんに関わるウイルスとがんの種類の組み合わせとして誤っているものを一つ選べ。",
-        type: "radio",
-        opts: [
-            { id: "a", text: "a. 子宮頸癌 - HPV" },
-            { id: "b", text: "b. 成人T細胞性白血病 - HTLV-1" },
-            { id: "c", text: "c. バーキットリンパ腫 - EBV" },
-            { id: "d", text: "d. 肝癌 - HBV" },
-            { id: "e", text: "e. 下咽頭癌 - HPV" }
-        ],
-        ans: ["e"],
-        exp: "HPV（ヒトパピローマウイルス）が関与するのは「中咽頭癌」および「子宮頸癌」です。下咽頭癌は主に喫煙と飲酒がリスク因子です。"
-    },
-    {
-        cat: "2. がんゲノム医療",
-        text: "病名と原因遺伝子の組み合わせであっているものを全て選べ。",
-        type: "checkbox",
-        opts: [
-            { id: "1", text: "1. 網膜芽腫 - RB" },
-            { id: "2", text: "2. 結節性硬化症 - PTEN" },
-            { id: "3", text: "3. Li Fraumeni 症候群 - TP53" },
-            { id: "4", text: "4. 家族性腺腫性ポリポーシス - APC" }
-        ],
-        ans: ["1", "3", "4"],
-        exp: "2の結節性硬化症はTSC1/TSC2（PTENはカウデン症候群）が原因遺伝子です。1,3,4は正しい組み合わせです。"
-    },
-    {
-        cat: "3. 診断・腫瘍マーカー",
-        text: "神経内分泌腫瘍で高値になるものはどれか。",
-        type: "radio",
-        opts: [
-            { id: "1", text: "1. CEA" },
-            { id: "2", text: "2. SCC" },
-            { id: "3", text: "3. AFP" },
-            { id: "4", text: "4. proGRP" }
-        ],
-        ans: ["4"],
-        exp: "proGRP（ガストリン放出ペプチド前駆体）やNSEは、小細胞肺癌や神経内分泌腫瘍（NEN）のマーカーとして有用です。"
-    },
-    {
-        cat: "4. がん薬物療法",
-        text: "細胞障害性抗がん剤について誤っているものを一つ選べ。",
-        type: "radio",
-        opts: [
-            { id: "a", text: "a. アルキル化剤は架橋を形成" },
-            { id: "b", text: "b. 白金製剤は架橋を形成" },
-            { id: "c", text: "c. フッ化ピリミジンは代謝拮抗薬" },
-            { id: "e", text: "e. タキサン系は微小管重合を阻害" }
-        ],
-        ans: ["e"],
-        exp: "タキサン系（パクリタキセル等）は「微小管の脱重合を阻害（過剰に安定化させる）」します。微小管の「重合を阻害」するのはビンカアルカロイド系です。"
-    },
-    {
-        cat: "9. 各論：乳癌",
-        text: "乳がんのサブタイプを決定する際に有用なマーカーを全て選べ。",
-        type: "checkbox",
-        opts: [
-            { id: "1", text: "1. 腫瘍マーカー" },
-            { id: "2", text: "2. Ki67" },
-            { id: "3", text: "3. HER2" },
-            { id: "5", text: "5. ホルモン受容体(ER, PgR)" }
-        ],
-        ans: ["2", "3", "5"],
-        exp: "乳がんの薬物療法決定に必須のサブタイプは、ホルモン受容体(ER/PgR)、HER2発現、および細胞増殖能マーカーであるKi-67の免疫染色結果によって分類されます。"
-    },
-    {
-        cat: "10. 各論：消化器癌",
-        text: "GISTの術後補助療法として正しいものはどれか。",
-        type: "radio",
-        opts: [
-            { id: "1", text: "1. イマチニブ3年" },
-            { id: "2", text: "2. スニチニブ1年" },
-            { id: "3", text: "3. レゴラフェニブ3年" }
-        ],
-        ans: ["1"],
-        exp: "再発高リスクの消化管間質腫瘍（GIST）の完全切除後には、チロシンキナーゼ阻害薬であるイマチニブを3年間内服する術後補助療法が推奨されます。"
-    }
-];
-
-let filtered = [...data];
-let idx = 0;
-
-window.onload = () => {
-    const sel = document.getElementById('cat-sel');
-    [...new Set(data.map(q => q.cat))].forEach(c => {
-        const o = document.createElement('option');
-        o.value = o.textContent = c;
-        sel.appendChild(o);
-    });
-    render();
-};
-
-function filterCat() {
-    const val = document.getElementById('cat-sel').value;
-    filtered = val === 'all' ? [...data] : data.filter(q => q.cat === val);
-    idx = 0;
-    render();
-}
-
-function render() {
-    if(!filtered.length) return;
-    const q = filtered[idx];
-    document.getElementById('q-num').textContent = idx + 1;
-    document.getElementById('q-total').textContent = filtered.length;
-    document.getElementById('q-text').textContent = q.text;
-    
-    const list = document.getElementById('opt-list');
-    list.innerHTML = '';
-    
-    q.opts.forEach(opt => {
-        const li = document.createElement('li');
-        li.innerHTML = `<label class="opt-label" onclick="toggle(this,'${q.type}')">
-            <input type="${q.type}" name="opt" value="${opt.id}"><span>${opt.text}</span></label>`;
-        list.appendChild(li);
-    });
-    
-    document.getElementById('exp-area').classList.remove('active');
-    document.getElementById('submit-btn').style.display = 'block';
-    
-    document.getElementById('prev-btn').disabled = idx === 0;
-    document.getElementById('next-btn').disabled = idx === filtered.length - 1;
-}
-
-function toggle(lbl, type) {
-    if(type === 'radio') {
-        document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
-        lbl.classList.add('selected');
-    } else {
-        setTimeout(() => {
-            const chk = lbl.querySelector('input');
-            chk.checked ? lbl.classList.add('selected') : lbl.classList.remove('selected');
-        }, 10);
-    }
-}
-
-function check() {
-    const checked = Array.from(document.querySelectorAll('input[name="opt"]:checked')).map(i => i.value).sort();
-    if(!checked.length) { alert("選択肢を選んでください"); return; }
-    
-    const q = filtered[idx];
-    const correct = [...q.ans].sort();
-    const isOk = JSON.stringify(checked) === JSON.stringify(correct);
-    
-    const b = document.getElementById('badge');
-    b.textContent = isOk ? "〇 正解！" : "× 不正解...";
-    b.className = "badge " + (isOk ? "correct-bg" : "wrong-bg");
-    
-    document.getElementById('correct-ans').textContent = correct.join(', ');
-    document.getElementById('user-ans').textContent = checked.join(', ');
-    document.getElementById('exp-text').textContent = q.exp;
-    
-    document.getElementById('exp-area').classList.add('active');
-    document.getElementById('submit-btn').style.display = 'none';
-    
-    // スクロールを少し下げて解説を見やすくする
-    setTimeout(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }, 100);
-}
-
-function go(step) {
-    idx += step;
-    render();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-</script>
-</body>
-</html>
+const data = [{"cat": "1. がんの基礎生物学・発がんメカニズム・疫学", "text": "BCR-ABL キメラ遺伝子産物の作用についてについて正しいものを1つ選べ", "opts": [{"id": "1", "text": "1. 転写を促進"}, {"id": "2", "text": "2. 異常な転写因子として転写を抑制"}, {"id": "3", "text": "3. 細胞シグナル増強"}, {"id": "4", "text": "4. 細胞死を引き起こす"}, {"id": "5", "text": "5. 細胞の周期停止を起こす"}], "ans": ["3"], "exp": "慢性骨髄性白血病（CML）などの原因となるBCR-ABLは、恒常的にチロシンキナーゼ活性を持ち、細胞増殖シグナルを異常に増強させアポトーシスを回避します。"}, {"cat": "1. がんの基礎生物学・発がんメカニズム・疫学", "text": "誤っているものを1つ選べ", "opts": [{"id": "1", "text": "1. 浸潤は、周囲組織の間質、細胞間に腫瘍細胞が侵入する。"}, {"id": "2", "text": "2. 血行性転移は、肺や肝など毛細血管の豊富な臓器に転移巣を作る。"}, {"id": "3", "text": "3. リンパ行性転移は骨に転移巣を作る。"}, {"id": "4", "text": "4. 播種は、体腔表面に露出する癌病巣から脱落、散布、着床する。"}, {"id": "5", "text": "5. 経管性転移は、管腔を介して癌細胞が移送される。"}], "ans": ["3"], "exp": "骨転移は主に「血行性転移」によるものです。リンパ行性転移は主に所属リンパ節に転移巣を形成します。"}, {"cat": "1. がんの基礎生物学・発がんメカニズム・疫学", "text": "発癌に関する遺伝子変異", "opts": [{"id": "1", "text": "1. ドライバー変異は発がんや悪性化に関わる重要な変異"}, {"id": "2", "text": "2. パッセンジャー変異は発がんや悪性化に関わる細胞の形質的変化を起こさない"}, {"id": "3", "text": "3. 広義のがん抑制遺伝子とは、ゲノム安定性の維持を含まれない"}, {"id": "4", "text": "4. がん遺伝子は一対の遺伝子のうち一方の変異のみで発がんに関与する"}, {"id": "5", "text": "5. がん抑制遺伝子は一対の遺伝子の両方の変異が起こることで発がんに関与する"}], "ans": ["1"], "exp": "発がんに直接関与するものをドライバー変異、付随するのみのものをパッセンジャー変異と呼びます。"}, {"cat": "1. がんの基礎生物学
