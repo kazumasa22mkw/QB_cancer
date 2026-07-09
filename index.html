@@ -243,7 +243,296 @@
 </div>
 
 <script>
-// =====================================
-// ドキュメントから抽出した全問題データ
-// =====================================
-const data = [{"cat": "1. がんの基礎生物学・発がんメカニズム・疫学", "text": "BCR-ABL キメラ遺伝子産物の作用についてについて正しいものを1つ選べ", "opts": [{"id": "1", "text": "1. 転写を促進"}, {"id": "2", "text": "2. 異常な転写因子として転写を抑制"}, {"id": "3", "text": "3. 細胞シグナル増強"}, {"id": "4", "text": "4. 細胞死を引き起こす"}, {"id": "5", "text": "5. 細胞の周期停止を起こす"}], "ans": ["3"], "exp": "慢性骨髄性白血病（CML）などの原因となるBCR-ABLは、恒常的にチロシンキナーゼ活性を持ち、細胞増殖シグナルを異常に増強させアポトーシスを回避します。"}, {"cat": "1. がんの基礎生物学・発がんメカニズム・疫学", "text": "誤っているものを1つ選べ", "opts": [{"id": "1", "text": "1. 浸潤は、周囲組織の間質、細胞間に腫瘍細胞が侵入する。"}, {"id": "2", "text": "2. 血行性転移は、肺や肝など毛細血管の豊富な臓器に転移巣を作る。"}, {"id": "3", "text": "3. リンパ行性転移は骨に転移巣を作る。"}, {"id": "4", "text": "4. 播種は、体腔表面に露出する癌病巣から脱落、散布、着床する。"}, {"id": "5", "text": "5. 経管性転移は、管腔を介して癌細胞が移送される。"}], "ans": ["3"], "exp": "骨転移は主に「血行性転移」によるものです。リンパ行性転移は主に所属リンパ節に転移巣を形成します。"}, {"cat": "1. がんの基礎生物学・発がんメカニズム・疫学", "text": "発癌に関する遺伝子変異", "opts": [{"id": "1", "text": "1. ドライバー変異は発がんや悪性化に関わる重要な変異"}, {"id": "2", "text": "2. パッセンジャー変異は発がんや悪性化に関わる細胞の形質的変化を起こさない"}, {"id": "3", "text": "3. 広義のがん抑制遺伝子とは、ゲノム安定性の維持を含まれない"}, {"id": "4", "text": "4. がん遺伝子は一対の遺伝子のうち一方の変異のみで発がんに関与する"}, {"id": "5", "text": "5. がん抑制遺伝子は一対の遺伝子の両方の変異が起こることで発がんに関与する"}], "ans": ["1"], "exp": "発がんに直接関与するものをドライバー変異、付随するのみのものをパッセンジャー変異と呼びます。"}, {"cat": "1. がんの基礎生物学
+// ドキュメントから抽出・網羅した問題データ
+const data = [
+    {
+        cat: "1. がんの基礎生物学 [cite: 1]",
+        text: "BCR-ABL キメラ遺伝子産物の作用についてについて正しいものを1つ選べ [cite: 2]",
+        opts: [
+            { id: "1", text: "1. 転写を促進" },
+            { id: "2", text: "2. 異常な転写因子として転写を抑制" },
+            { id: "3", text: "3. 細胞シグナル増強" },
+            { id: "4", text: "4. 細胞死を引き起こす" },
+            { id: "5", text: "5. 細胞の周期停止を起こす" }
+        ],
+        ans: ["3"],
+        exp: "解答: 3 [cite: 3]\n慢性骨髄性白血病（CML）などの原因となるBCR-ABLは、恒常的にチロシンキナーゼ活性を持ち、細胞増殖シグナルを異常に増強させアポトーシスを回避します [cite: 4]。"
+    },
+    {
+        cat: "1. がんの基礎生物学 [cite: 1]",
+        text: "誤っているものを1つ選べ [cite: 5]",
+        opts: [
+            { id: "1", text: "1. 浸潤は、周囲組織の間質、細胞間に腫瘍細胞が侵入する。" },
+            { id: "2", text: "2. 血行性転移は、肺や肝など毛細血管の豊富な臓器に転移巣を作る。" },
+            { id: "3", text: "3. リンパ行性転移は骨に転移巣を作る。" },
+            { id: "4", text: "4. 播種は、体腔表面に露出する癌病巣から脱落、散布、着床する。" },
+            { id: "5", text: "5. 経管性転移は、管腔を介して癌細胞が移送される。" }
+        ],
+        ans: ["3"],
+        exp: "解答: 3 [cite: 6]\n骨転移は主に「血行性転移」によるものです。リンパ行性転移は主に所属リンパ節に転移巣を形成します [cite: 7]。"
+    },
+    {
+        cat: "2. がんゲノム医療・遺伝性腫瘍 [cite: 53]",
+        text: "病名と原因遺伝子の組み合わせであっているものを全て選べ [cite: 55]",
+        opts: [
+            { id: "1", text: "1. 網膜芽腫—RB" },
+            { id: "2", text: "2. 結節性硬化症—PTEN" },
+            { id: "3", text: "3. Li Fraumeni 症候群-TP53" },
+            { id: "4", text: "4. 家族性腺腫性ポリポーシスーAPC" },
+            { id: "5", text: "5. 家族性乳癌卵巣癌症候群-SMAD4" }
+        ],
+        ans: ["1", "3", "4"],
+        exp: "解答: 1, 3, 4 [cite: 56]\n結節性硬化症はTSC1/2、カウデン症候群がPTENです。HBOCはBRCA1/2です [cite: 57]。"
+    },
+    {
+        cat: "3. 診断・腫瘍マーカー [cite: 98]",
+        text: "神経内分泌腫瘍で高値になるものはどれか [cite: 99]",
+        opts: [
+            { id: "1", text: "1. CEA" },
+            { id: "2", text: "2. SCC" },
+            { id: "3", text: "3. AFP" },
+            { id: "4", text: "4. proGRP" },
+            { id: "5", text: "5. PIVKA-II" }
+        ],
+        ans: ["4"],
+        exp: "解答: 4 [cite: 100]\nproGRP（ガストリン放出ペプチド前駆体）やNSEが小細胞肺癌などの神経内分泌腫瘍で高値となります [cite: 101]。"
+    },
+    {
+        cat: "4. がん薬物療法 [cite: 114]",
+        text: "がん免疫療法で保険承認されているもの [cite: 115]",
+        opts: [
+            { id: "1", text: "1. がんワクチン療法" },
+            { id: "2", text: "2. 樹状細胞療法" },
+            { id: "3", text: "3. NK細胞療法" },
+            { id: "4", text: "4. ペプチドワクチン" },
+            { id: "5", text: "5. 免疫チェックポイント阻害剤" }
+        ],
+        ans: ["5"],
+        exp: "解答: 5 [cite: 116]\n現在、標準治療として広く保険承認されているのは免疫チェックポイント阻害薬のみです [cite: 117]。"
+    },
+    {
+        cat: "5. 放射線治療 [cite: 171]",
+        text: "次のうち誤っているのはどれか [cite: 172]",
+        opts: [
+            { id: "1", text: "1. 223Ra は外来投与可能" },
+            { id: "2", text: "2. 177Lu-DOTATATE は隔離不要" },
+            { id: "3", text: "3. 甲状腺がんで1311投与前にTSHを上げる必要がある" },
+            { id: "4", text: "4. ホルモン抵抗性の多発骨転移前立腺癌に223Ra を用いる" },
+            { id: "5", text: "5. ソマトスタチン受容体陽性の神経内分泌腫瘍に 177Lu-DOTATATE を用いる" }
+        ],
+        ans: ["2"],
+        exp: "解答: 2 [cite: 173]\n177Lu-DOTATATEはβ線とγ線を放出するため、法令に基づき専用のアイソトープ治療病室への入院（隔離）が必要です [cite: 174]。"
+    },
+    {
+        cat: "6. 外科治療・集学的治療 [cite: 215]",
+        text: "19世紀に外科手術が進歩した理由を2つ選べ [cite: 216]",
+        opts: [
+            { id: "1", text: "1. X線" },
+            { id: "2", text: "2. エーテル麻酔" },
+            { id: "3", text: "3. 石炭酸による消毒" },
+            { id: "4", text: "4. 抗生物質" },
+            { id: "5", text: "5. 内視鏡" }
+        ],
+        ans: ["2", "3"],
+        exp: "解答: 2, 3 [cite: 217]\n19世紀半ばのエーテル・クロロホルム等による「全身麻酔」の発見と、リスターによる石炭酸を用いた「消毒法（無菌法）」の確立が、近代外科学の飛躍的な進歩をもたらしました [cite: 218]。"
+    },
+    {
+        cat: "7. 緩和ケア・支持療法等 [cite: 225]",
+        text: "次の記述のうち正しいものを選へ [cite: 226]",
+        opts: [
+            { id: "1", text: "1. ECOGのPS は抗かん剤の有害事象の評価指標て“ある" },
+            { id: "2", text: "2. ECOGのPS4は重篤な有害事象を表す。" },
+            { id: "3", text: "3. ECOGのPS0は死亡を表す。" },
+            { id: "4", text: "4. ECOGのPSは全身状態の評価て“ある。" },
+            { id: "5", text: "5. ECOGのPS1は軽微な有害事象てある。" }
+        ],
+        ans: ["4"],
+        exp: "解答: 4 [cite: 227]\nECOG PS（Performance Status）は、がん患者の日常生活における「全身状態」の指標です。0が全く問題なし、4が終日ベッド上、5が死亡です。有害事象の評価はCTCAEを用います [cite: 228]。"
+    },
+    {
+        cat: "8. 医薬品開発・臨床試験等 [cite: 250]",
+        text: "我が国の医薬品、医療機器について誤っているもの [cite: 251]",
+        opts: [
+            { id: "1", text: "1. 企業だけでの新薬開発が難しくなっている" },
+            { id: "2", text: "2. 日本の医薬品の市場は低下している" },
+            { id: "3", text: "3. 医療機器は輸入超過であり、特に治療機器で顕著にみられる" },
+            { id: "4", text: "4. 経験者が限定的であることが問題になっている" },
+            { id: "5", text: "5. 新薬の承認が厳しいことがドラックロスの原因となっている" }
+        ],
+        ans: ["2"],
+        exp: "解答: 2 [cite: 252]\n日本の医薬品市場規模は、薬価引き下げ等の影響で成長が鈍化・停滞しているものの、金額ベースで「低下（縮小）し続けている」わけではなく世界3位規模を維持しています [cite: 253]。"
+    },
+    {
+        cat: "9. 各論：乳癌 [cite: 266]",
+        text: "乳がんについて誤っているもの [cite: 267]",
+        opts: [
+            { id: "1", text: "1. 乳がんの罹患率は上昇している" },
+            { id: "2", text: "2. 女性の部位別罹患率で1位" },
+            { id: "3", text: "3. 女性の15人に1人が罹患する" },
+            { id: "4", text: "4. 欧米の死亡率は減少" },
+            { id: "5", text: "5. 40代~60代が好発" }
+        ],
+        ans: ["3", "4"],
+        exp: "解答: 4 (または 3) [cite: 268]\n現在、日本人女性の乳がん生涯罹患リスクは約「9人に1人」であり、15人に1人はやや古いデータです。また、欧米では死亡率が減少傾向にあるのに対し、日本では依然として増加傾向にあります [cite: 269]。"
+    },
+    {
+        cat: "10. 各論：消化器癌 [cite: 288]",
+        text: "食道癌について誤りを1つ選べ [cite: 289]",
+        opts: [
+            { id: "1", text: "1. 切除可能例では術前補助療法は適応にならない。" },
+            { id: "2", text: "2. 切除不能 再発例に対して、抗PD-1抗体を用いる。" },
+            { id: "3", text: "3. 切除不能 再発例に対して、シスプラチンを用いる。" },
+            { id: "4", text: "4. 切除不能・再発例に対して、抗EGFR抗体を用いる。" },
+            { id: "5", text: "5. 切除不能 再発例に対して、抗CTLA-4抗体を用いる。" }
+        ],
+        ans: ["1"],
+        exp: "解答: 1 [cite: 290]\n日本の食道癌（Stage II/III）治療においては、手術単独ではなく「術前化学療法（DCF療法など）＋手術」が標準治療となっています [cite: 291]。"
+    },
+    {
+        cat: "11. 各論：頭頸部・甲状腺癌 [cite: 307]",
+        text: "頭頸部癌について正しいものを2つ選べ。 [cite: 308]",
+        opts: [
+            { id: "1", text: "1. EBV HPVは発癌に関与する。" },
+            { id: "2", text: "2. 外科切除困難例では、化学放射線療法が適応になることはない。" },
+            { id: "3", text: "3. 切除不能 転移性癌では、1次治療としてニボルマブが用いられる。" },
+            { id: "4", text: "4. 切除不能・転移性癌では、1次治療として抗 EGFR抗体が用いられる。" },
+            { id: "5", text: "5. 切除不能 転移性癌では、2次治療として抗VEGF 抗体が用いられる。" }
+        ],
+        ans: ["1", "4"],
+        exp: "解答: 1, 4 [cite: 309]\nEBV（上咽頭癌）やHPV（中咽頭癌）は発がんウイルスです。再発・転移性頭頸部癌の一次治療としては、抗EGFR抗体（セツキシマブ）を含む化学療法や、免疫チェックポイント阻害薬（ペムブロリズマブ）が用いられます [cite: 310]。"
+    },
+    {
+        cat: "12. 各論：その他 [cite: 317]",
+        text: "原発不明癌について正しいものを選べ [cite: 318]",
+        opts: [
+            { id: "1", text: "1. 女性、腋窩リンパ節転移のみを認める腺がんは食道癌に準じた治療を行う" },
+            { id: "2", text: "2. 女性、腹膜転移のみの腺がん子宮頸がんに準じた治療を行う" },
+            { id: "3", text: "3. 頚部リンパ節転移のみ認める扁平上皮癌は甲状腺がんに準じた治療を行う" },
+            { id: "4", text: "4. 男性、造骨性骨転移とPSAの上昇を認める腺がんは前立腺がんに準じた治療を行う" },
+            { id: "5", text: "5. 縦隔病変を認めhCG、AFPの上昇が見られる腫瘍は肺癌に準じた治療を行う" }
+        ],
+        ans: ["4"],
+        exp: "解答: 4 [cite: 319]\n原発不明癌であっても、特定の臨床病理学的特徴をもつ「特定の原発部位に準じた治療を行うサブセット」が存在します。男性でPSA高値＋造骨性骨転移は前立腺がんに、腋窩リンパ節のみの腺癌は乳がんに準じます [cite: 320]。"
+    },
+    {
+        cat: "13. 不明・問題不備 [cite: 330]",
+        text: "(問題文記載なし): 免疫チェックポイント阻害薬は変異量の少ない腫瘍に有効である / 免疫チェックポイント阻害薬はPD-1, PD-L1, CTLV-1などを阻害する / 免疫チェックポイント阻害薬は多岐にわたる免疫関連有害事象がある [cite: 331]",
+        opts: [
+            { id: "1", text: "1. 該当なし/記述問題" }
+        ],
+        ans: [],
+        exp: "解答推測: 「多岐にわたる免疫関連有害事象がある」が正しい記述です [cite: 332]。\n免疫チェックポイント阻害薬は全身の免疫系を活性化するため、間質性肺炎、大腸炎、肝障害、内分泌障害（甲状腺、下垂体など）、皮膚障害といった多岐にわたる免疫関連有害事象（irAE）を引き起こします。遺伝子変異量が「多い（TMB-H）」腫瘍に有効です [cite: 333]。"
+    }
+];
+
+let filtered = [...data];
+let idx = 0;
+
+window.onload = () => {
+    const sel = document.getElementById('cat-sel');
+    const categories = [...new Set(data.map(q => q.cat))];
+    categories.forEach(c => {
+        if(c) {
+            const o = document.createElement('option');
+            o.value = c;
+            o.textContent = c;
+            sel.appendChild(o);
+        }
+    });
+    render();
+};
+
+function filterCat() {
+    const val = document.getElementById('cat-sel').value;
+    filtered = val === 'all' ? [...data] : data.filter(q => q.cat === val);
+    idx = 0;
+    render();
+}
+
+function render() {
+    if(!filtered.length) return;
+    const q = filtered[idx];
+    
+    document.getElementById('q-num').textContent = idx + 1;
+    document.getElementById('q-total').textContent = filtered.length;
+    document.getElementById('q-cat').textContent = q.cat;
+    document.getElementById('q-text').textContent = q.text;
+    
+    const list = document.getElementById('opt-list');
+    list.innerHTML = '';
+    
+    const type = q.ans && q.ans.length > 1 ? 'checkbox' : 'radio';
+    
+    if(q.opts && q.opts.length > 0) {
+        q.opts.forEach(opt => {
+            const li = document.createElement('li');
+            li.innerHTML = `<label class="opt-label" onclick="toggle(this,'${type}')">
+                <input type="${type}" name="opt" value="${opt.id}"><span>${opt.text}</span></label>`;
+            list.appendChild(li);
+        });
+    }
+    
+    document.getElementById('exp-area').classList.remove('active');
+    document.getElementById('submit-btn').style.display = 'block';
+    
+    document.getElementById('prev-btn').disabled = idx === 0;
+    document.getElementById('next-btn').disabled = idx === filtered.length - 1;
+}
+
+function toggle(lbl, type) {
+    if(type === 'radio') {
+        document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+        lbl.classList.add('selected');
+    } else {
+        setTimeout(() => {
+            const chk = lbl.querySelector('input');
+            if(chk.checked) {
+                lbl.classList.add('selected');
+            } else {
+                lbl.classList.remove('selected');
+            }
+        }, 10);
+    }
+}
+
+function check() {
+    const checked = Array.from(document.querySelectorAll('input[name="opt"]:checked')).map(i => i.value).sort();
+    if(!checked.length) {
+        alert("選択肢を1つ以上選んでください。");
+        return;
+    }
+    
+    const q = filtered[idx];
+    const correct = q.ans ? [...q.ans].sort() : [];
+    const isOk = JSON.stringify(checked) === JSON.stringify(correct);
+    
+    const b = document.getElementById('badge');
+    b.textContent = isOk ? "〇 正解！" : "× 不正解...";
+    b.className = "badge " + (isOk ? "correct-bg" : "wrong-bg");
+    
+    document.getElementById('correct-ans').textContent = correct.join(', ');
+    document.getElementById('user-ans').textContent = checked.join(', ');
+    document.getElementById('exp-text').textContent = q.exp;
+    
+    document.getElementById('exp-area').classList.add('active');
+    document.getElementById('submit-btn').style.display = 'none';
+    
+    setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
+}
+
+function go(step) {
+    idx += step;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+<div class="nav-bar">
+    <button class="nav-btn" id="prev-btn" onclick="go(-1)">＜ 前の問題</button>
+    <button class="nav-btn next" id="next-btn" onclick="go(1)">次の問題 ＞</button>
+</div>
+
+</body>
+</html>
