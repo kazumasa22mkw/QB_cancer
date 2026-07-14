@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>medilink QB形式 - 過去問演習Webアプリ (完全版)</title>
+<title>medilink QB形式 - 過去問演習アプリ(完全版)</title>
 <style>
     :root {
         --primary: #0056b3;
@@ -24,28 +24,73 @@
     .header {
         background: var(--primary);
         color: #fff;
-        padding: 12px 15px;
+        padding: 10px 15px;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        flex-direction: column;
+        gap: 10px;
         position: sticky;
         top: 0;
         z-index: 100;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
     }
     .header select {
         padding: 8px;
         border-radius: 6px;
         border: none;
-        max-width: 65%;
+        max-width: 55%;
         font-size: 14px;
         background: #fff;
         font-weight: bold;
         color: #333;
     }
-    .progress {
+    
+    /* 検索バー */
+    .header-search {
+        width: 100%;
+    }
+    .header-search input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: none;
+        font-size: 14px;
+        box-sizing: border-box;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    /* ボタン類 */
+    .controls { display: flex; gap: 8px; align-items: center;}
+    .shuffle-btn {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.4);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
         font-weight: bold;
-        font-size: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .shuffle-btn.active {
+        background: #ffc107;
+        color: #333;
+        border-color: #ffc107;
+    }
+    .progress-btn {
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
         white-space: nowrap;
     }
 
@@ -63,16 +108,28 @@
         margin-bottom: 20px;
         border: 1px solid var(--card-border);
     }
+    .q-header-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 8px;
+    }
     .q-cat-tag {
-        display: inline-block;
-        background: #e8f4ff;
         color: var(--primary);
-        padding: 4px 8px;
+        font-size: 13px;
+        font-weight: bold;
+    }
+    .q-id-tag {
+        background: #e9ecef;
+        color: #495057;
+        padding: 3px 8px;
         border-radius: 4px;
         font-size: 12px;
         font-weight: bold;
-        margin-bottom: 12px;
     }
+    
     .q-text {
         font-size: 16px;
         font-weight: bold;
@@ -82,16 +139,12 @@
     }
 
     /* 選択肢リスト */
-    .options {
-        list-style: none;
-        padding: 0;
-        margin: 0 0 20px;
-    }
+    .options { list-style: none; padding: 0; margin: 0 0 20px; }
     .opt-label {
         display: flex;
         align-items: center;
         padding: 16px 15px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         background: #fff;
         border: 2px solid #e9ecef;
         border-radius: 10px;
@@ -99,21 +152,14 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-    .opt-label:hover {
-        background: #f8f9fa;
-    }
     .opt-label.selected {
         border-color: var(--primary);
         background: #e8f4ff;
         font-weight: bold;
     }
-    .opt-label input {
-        margin-right: 15px;
-        transform: scale(1.5);
-        cursor: pointer;
-    }
+    .opt-label input { margin-right: 15px; transform: scale(1.4); }
 
-    /* アクションボタン */
+    /* 解答ボタン */
     .btn {
         background: #28a745;
         color: #fff;
@@ -125,12 +171,8 @@
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         cursor: pointer;
-        transition: background 0.2s;
     }
-    .btn:active {
-        background: #218838;
-        transform: translateY(1px);
-    }
+    .btn:active { background: #218838; transform: translateY(2px); }
 
     /* 解説エリア */
     .exp-area {
@@ -139,37 +181,20 @@
         border-top: 2px dashed #dee2e6;
         padding-top: 20px;
     }
-    .exp-area.active {
-        display: block;
-        animation: fadeIn 0.3s ease-out;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 6px;
-        color: #fff;
-        font-weight: bold;
-        margin-bottom: 15px;
-        font-size: 16px;
-    }
-    .correct-bg { background: var(--correct); }
-    .wrong-bg { background: #6c757d; }
+    .exp-area.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     
     .ans-box {
         background: #fff3cd;
         padding: 14px;
         border-left: 5px solid #ffc107;
         margin-bottom: 20px;
-        font-weight: bold;
         font-size: 15px;
         border-radius: 4px;
         line-height: 1.5;
     }
+    .ans-title { font-weight: bold; color: #856404; margin-bottom: 5px; font-size: 14px;}
+    .correct-ans-text { color: var(--correct); font-weight: bold; font-size: 1.1em; }
     .exp-text-title {
         color: var(--primary);
         margin: 0 0 10px;
@@ -183,6 +208,16 @@
         white-space: pre-wrap;
     }
     
+    /* 画像の自動最適化 */
+    img.q-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 15px auto;
+        display: block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
     /* 下部ナビゲーション */
     .nav-bar {
         position: fixed;
@@ -192,9 +227,9 @@
         background: #ffffff;
         border-top: 1px solid #dee2e6;
         display: flex;
-        padding: 12px 15px;
+        padding: 10px 15px;
         justify-content: space-between;
-        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
         box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         z-index: 99;
     }
@@ -202,37 +237,117 @@
         background: #6c757d;
         color: #fff;
         border: none;
-        padding: 14px 0;
+        padding: 12px 0;
         border-radius: 8px;
         font-weight: bold;
         font-size: 15px;
         width: 48%;
         cursor: pointer;
-        text-align: center;
     }
     .nav-btn.next { background: var(--primary); }
     .nav-btn:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; opacity: 0.8; }
+
+    /* 問題一覧モーダル */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .modal-content {
+        background: #fff;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 500px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: var(--primary);
+        color: white;
+    }
+    .modal-header h3 { margin: 0; font-size: 16px; }
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: white;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+    .q-grid {
+        padding: 15px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 10px;
+        overflow-y: auto;
+    }
+    .q-grid-btn {
+        padding: 12px 5px;
+        text-align: center;
+        background: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        color: #495057;
+    }
+    .q-grid-btn.current {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
 </style>
 </head>
 <body>
 
 <div class="header">
-    <select id="cat-sel" onchange="filterCat()">
-        <option value="all">全分野（まとめて演習）</option>
-    </select>
-    <div class="progress"><span id="q-num">1</span> / <span id="q-total">-</span></div>
+    <div class="header-top">
+        <select id="cat-sel" onchange="changeCategory()">
+            <option value="all">全分野（まとめて演習）</option>
+        </select>
+        <div class="controls">
+            <button id="shuffle-btn" class="shuffle-btn" onclick="toggleShuffle()">🔀 シャッフル</button>
+            <button class="progress-btn" onclick="openModal()">
+                <span id="q-num">1</span> / <span id="q-total">-</span> 🔽
+            </button>
+        </div>
+    </div>
+    <!-- 文字検索バーを追加 -->
+    <div class="header-search">
+        <input type="text" id="search-input" placeholder="🔍 キーワードで問題・解説を検索..." oninput="applyFilters()">
+    </div>
 </div>
 
 <div class="container">
-    <div class="q-card">
-        <div id="q-cat" class="q-cat-tag"></div>
+    <div class="q-card" id="q-card">
+        <div class="q-header-info">
+            <div id="q-cat" class="q-cat-tag"></div>
+            <div id="q-id" class="q-id-tag"></div>
+        </div>
+        
         <div class="q-text" id="q-text"></div>
         <ul class="options" id="opt-list"></ul>
-        <button class="btn" id="submit-btn" onclick="check()">解答・解説を見る</button>
+        <button class="btn" id="submit-btn" onclick="check()">解答・解説を確認する</button>
         
         <div class="exp-area" id="exp-area">
             <div class="ans-box">
-                【公式解答】<br><span id="correct-ans" style="color:var(--correct); font-size:1.1em;"></span>
+                <div class="ans-title">【公式解答】</div>
+                <div id="correct-ans" class="correct-ans-text"></div>
+                <div style="margin-top:8px; font-size:13px; color:#666;">あなたの選択： <span id="user-ans"></span></div>
             </div>
             <h4 class="exp-text-title">【解説】</h4>
             <div id="exp-text" class="exp-main-text"></div>
@@ -241,10 +356,24 @@
 </div>
 
 <div class="nav-bar">
-    <button class="nav-btn" id="prev-btn" onclick="go(-1)">＜ 前の問題</button>
-    <button class="nav-btn next" id="next-btn" onclick="go(1)">次の問題 ＞</button>
+    <button class="nav-btn" id="prev-btn" onclick="go(-1)">＜ 前へ</button>
+    <button class="nav-btn next" id="next-btn" onclick="go(1)">次へ ＞</button>
 </div>
 
+<!-- 問題一覧モーダル -->
+<div id="q-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>問題ジャンプ</h3>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div id="q-grid" class="q-grid"></div>
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- 生データ：ここに全248問を格納（文字数制限対策） -->
+<!-- ============================================== -->
 <script id="raw-data" type="text/plain">
 1. がんの基礎生物学・発がんメカニズム・疫学
 * BCR-ABL キメラ遺伝子産物の作用についてについて正しいものを1つ選べ: 1. 転写を促進 2. 異常な転写因子として転写を抑制 3. 細胞シグナル増強 4. 細胞死を引き起こす 5. 細胞の周期停止を起こす
@@ -276,7 +405,7 @@
 解説: 選択肢a~eはいずれもがんを防御するメカニズムであり、問題の不備と考えられます。
 * がんの発生や進展を活性化させるメカニズムとして誤っているもの: a 宿主免疫機構の活性化 bDNA修復機構の抑制 c がん遺伝子の活性化 d がん抑制遺伝子の活性化 e細胞周期チェックポイント機構の活性化
 解答: a 宿主免疫機構の活性化, d がん抑制遺伝子の活性化
-解説: 宿主免疫機構の活性化やがん抑制遺伝子の活性化はがんを「防御」するメカニズムです。
+解説: 免疫機構やがん抑制遺伝子の活性化は、がんを「防御」するメカニズムです。
 * 悪性腫瘍について、誤りはどれか。: 1. 悪性腫瘍は不均一な細胞の集団である。 2. 癌腫は非上皮性腫瘍である。 3. 正常細胞や組織の形態や機能から離れて喪失することを退形成という。 4. 異形成には細胞異型と構造異型がある。 5. 発生母地の細胞や組織の形態・組織との類似性を分化度という。
 解答: 2. 癌腫は非上皮性腫瘍である。
 解説: 癌腫（Carcinoma）は「上皮性」組織由来の悪性腫瘍です。「非上皮性」は肉腫（Sarcoma）です。
@@ -306,7 +435,7 @@
 解説: HPV（ヒトパピローマウイルス）が関与するのは子宮「頸」癌です。
 * がん幹細胞と関係が深いものを全て選べ: a. differentiation b. EMT c. low expression of ABC transporter d. side population e. slow glowing
 解答: b. EMT, d. side population, e. slow glowing
-解説: がん幹細胞は未分化（undifferentiated）であり、薬剤排出ポンプ（ABC transporter）を高発現して抗がん剤に耐性を示します（side population）。また、増殖が遅い（slow growing）特徴もあります。
+解説: がん幹細胞は未分化であり、薬剤排出ポンプ（ABC transporter）を高発現して抗がん剤に耐性を示します（side population）。また、増殖が遅い（slow growing）特徴もあります。
 * 下記の記載で誤っているのはどれか: a. ヒトには1個体あたり約60兆個の細胞が存在する b. ヒト細胞のゲノムには、1細胞あたり約300億個の塩基対が存在する c. ヒトの遺伝子は約2万個から2万5千個である d. ゲノムDNAのは配列の異常だけでなく、DNAメチル化異常やヒストン修飾異常などのDNA配列以外(エピゲノム)の異常も発癌の原因となる e. タンパク質をコードしないRNAの異常も癌化に寄与する
 解答: b. ヒト細胞のゲノムには、1細胞あたり約300億個の塩基対が存在する
 解説: ヒトゲノムは約30億塩基対です。
@@ -348,6 +477,9 @@
 * ゲノム医療について誤っているもの一つ: a.遺伝子パネル検査は保険償還されている b.遺伝子パネル検査は、がんゲノム医療中核拠点病院、がんゲノム医療拠点病院、がんゲノム医療定型病院で行える c. 患者の半数に新規治療を提案できる d.遺伝性腫瘍を疑うことができる所見を得られる e.MSIの判定ができる
 解答: c. 患者の半数に新規治療を提案できる
 解説: 同上。
+* 癌は欧米と日本人で異なる傾向 遺伝パネルは保険適応云々 遺伝パネルは半分くらいに新規治療利益を提案できる 遺伝パネルは腫瘍の初見が見られる 遺伝パネルは様々な専門家に見せてから患者に変換
+解答: 遺伝パネルは半分くらいに新規治療利益を提案できる（これが誤り）
+解説: 実際に新規の分子標的薬などの治療に結びつく患者は全体の約10%前後にとどまります。
 * TMBについて正しいものを2つ選べ: a TMBはmicrosatellite instabilityと同義である b腫瘍の悪性度と正の相関がある c TMB>=10でTMB-highとみなされる d TMB-highでは免疫チェックポイント阻害剤がよい適応となる eエクホーム解析では調べられるが遺伝子パネル解析では不可能
 解答: c TMB>=10でTMB-highとみなされる, d TMB-highでは免疫チェックポイント阻害剤がよい適応となる
 解説: 腫瘍遺伝子変異量（TMB）が高い（≥10 mut/Mb）固形癌には、がん種横断的に抗PD-1抗体（ペムブロリズマブ）が保険適用となります。MSIとは異なる指標です。
@@ -362,7 +494,7 @@
 解説: 遺伝性腫瘍の原因遺伝子の多くはBRCA1/2、APC、MLH1などの「がん抑制遺伝子」です。
 * 病名と原因遺伝子の組み合わせであっているものを全て選べ: 1.網膜芽腫—RB 2.結節性硬化症—PTEN 3. Li Fraumeni 症候群-TP53 4.家族性腺腫性ポリポーシスーAPC 5.家族性乳癌卵巣癌症候群-SMAD4
 解答: 1.網膜芽腫—RB, 3. Li Fraumeni 症候群-TP53, 4.家族性腺腫性ポリポーシスーAPC
-解説: 結節性硬化症はTSC1/2、カウデン症候群がPTENです。HBOCはBRCA1/2です。
+解説: 結節性硬化症はTSC1/2、カウデン症候群がPTENです。HBOCはBRCA1/2（SMAD4は若年性ポリポーシス等）です。
 * 遺伝性疾患と原因遺伝子の組み合わせで誤っているもの: 1.遺伝性乳癌卵巣癌症候群-BRCA2 2.家族性大腸腺腫症-APC 3. Lynch 症候群-MSH2 4. Peutz-Jeghers 症候群-PTEN 5. 神経繊維種症1型-NF1
 解答: 4. Peutz-Jeghers 症候群-PTEN
 解説: Peutz-Jeghers症候群の原因遺伝子はSTK11です。PTENはカウデン症候群の原因遺伝子です。
@@ -435,7 +567,7 @@
 解答: 3. TTF-1
 解説: TTF-1は原発性肺腺癌や甲状腺癌で陽性となりますが、胃癌では陰性となるため鑑別に極めて有用です。
 * liquid biopsyに用いられる液体を全て選べ: a. cerebrospinal flood b. pieural effusion c. saliva d. urine e. blood
-解答: a. cerebrospinal flood b. pieural effusion c. saliva d. urine e. blood
+解答: a. cerebrospinal flood, b. pieural effusion, c. saliva, d. urine, e. blood
 解説: リキッドバイオプシーは、血液（blood）だけでなく、尿、唾液、胸水、髄液など、腫瘍由来の核酸が含まれうる様々な体液を用いて行われます。
 * 乳腺の組織診が細胞診より優れている点2つ選べ。: a. 痛みが少ない。 b. 検体採取が容易。 c. バイオマーカーが使える。 d. 組織が見られる e. 細胞一つ一つ見られる。
 解答: c. バイオマーカーが使える。 d. 組織が見られる
@@ -449,7 +581,7 @@
 解答: 5. 免疫チェックポイント阻害剤
 解説: 現在、標準治療として広く保険承認されているのは免疫チェックポイント阻害薬のみです。
 * 下記のがん免疫療法で有効性が示されている治療はどれか。2つ選べ。: a. がんワクチン療法 b.免疫チェックポイント阻害薬 c.樹状細胞治療 d.NK細胞治療 e.BCG治療
-解答: b.免疫チェックポイント阻害薬 e.BCG治療
+解答: b.免疫チェックポイント阻害薬, e.BCG治療
 解説: 膀胱癌に対するBCGの膀胱内注入療法は、古くから有効性が確立しているがん免疫療法の一つです。
 * 免疫チェックポイント阻害剤について正しいものを1つ選べ。: 1. 治療効果は長時間にわたる 2. 副作用は殺細胞性抗がん剤とほぼ同じである。 3. 治療効果はほぼ100%である。 4. 副作用の出る時期が予想しやすい。 5. すべての種類のがんに保健適応である。
 解答: 1. 治療効果は長時間にわたる
@@ -461,7 +593,7 @@
 解答: b. 免疫チェックポイント阻害薬は変異量の少ない腫瘍に有効である (誤り) または C (CTLA-4のタイポ)
 解説: 遺伝子変異量が「多い（TMB-H）」腫瘍ほど、ネオ抗原が豊富で免疫療法が有効になりやすいです。
 * 免疫チェックポイント阻害薬のバイオマーカーとして正しいものを2つ: a ki-67 b PD-L1の発現 c CTLA-4の発現 d腫瘍免疫細胞の数 e遺伝子変異数TMB
-解答: b PD-L1の発現 e遺伝子変異数TMB
+解答: b PD-L1の発現, e遺伝子変異数TMB
 解説: MSI-H、TMB-High、PD-L1発現率（TPS/CPS）などがバイオマーカーとして用いられます。
 * 免疫関連有害事象で多いもの: a. 心筋梗塞 b. 腎障害 c. 皮膚障害 d. 重症筋無力症 e. 1型糖尿病
 解答: c. 皮膚障害
@@ -537,7 +669,7 @@
 解説: 悪心・嘔吐やアレルギー反応は急性期（当日〜数日以内）によくみられます。
 
 5. 放射線治療
-* 次のうち誤っているのはどれか: 1. 223Ra は外来投与可能 2. 177Lu-DOTATATE は隔離不要 3. 甲状腺がんで1311投与前にTSHを上げる必要がある 4. ホルモン抵抗性の多発骨転移前立腺癌に223Ra を用いる 5. ソマトスタチン受容体陽性の神経内分泌腫瘍に 177Lu-DOTATATE を用いる
+* 次のうち誤っているのはどれか: 1. 223Ra は外来投与可能 2. 177Lu-DOTATATE は隔離不要 3. 甲状腺がんで131I投与前にTSHを上げる必要がある 4. ホルモン抵抗性の多発骨転移前立腺癌に223Ra を用いる 5. ソマトスタチン受容体陽性の神経内分泌腫瘍に 177Lu-DOTATATE を用いる
 解答: 2. 177Lu-DOTATATE は隔離不要
 解説: 177Lu-DOTATATEはβ線とγ線を放出するため、法令に基づき専用のアイソトープ治療病室への入院（隔離）が必要です。
 * 放射線内者照射療法について誤っているものを選べ: 1甲状腺髓様癌に対して125Iを行う 2線を放出する核種の内照射後は隔離の必要がある 3去勢抵抗性前立腺癌の骨転移にRa-223 4 ソマトスタチン受容体を有する神経内分泌腫瘍に対してLu 177 Dotatate 5甲状腺の放射線療法の時甲状腺全摘が必要
@@ -1010,189 +1142,49 @@
 * リンパ系腫瘍について誤っているのはどれか: a. リンパ系腫瘍はB-cell、T-cell、NK-cellなどの細胞起源、分化段階、機能、遺伝子変異などによって分類される b. リンパ系腫瘍は組織生検をしなくとも確定診断が得られるようになった c. 悪性リンパ腫は悪性度により無治療では経過観察をすることが望ましい場合もある d. 多発性骨髄腫は多彩な治療法があるが、治癒は難しい e. 急性リンパ性白血病の高リスク群は第1寛解期における造血幹細胞移植で予後の改善が期待できる
 解答: b. リンパ系腫瘍は組織生検をしなくとも確定診断が得られるようになった
 解説: 悪性リンパ腫の確定診断および病型分類には、リンパ節の「生検（組織診）」による病理組織学的・免疫組織化学的評価が不可欠です。
-</script>
+"""
 
-<script>
-// --- 生データをJavaScriptの配列にパースする処理 ---
-function parseData() {
-    const rawText = document.getElementById('raw-data').textContent;
-    const lines = rawText.split('\n');
-    const questions = [];
-    let currentCat = "未分類";
-    let currentQ = null;
+questions = []
+current_cat = ""
+current_q = None
 
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
+for line in text.strip().split('\n'):
+    line = line.strip()
+    if not line or line === "問題" or line === "解答解説": continue
+    
+    if re.match(r'^\d+\.\s', line):
+        current_cat = line
+    elif line.startswith("* "):
+        if current_q:
+            questions.append(current_q)
+        q_text = line[2:].strip()
+        current_q = {"cat": current_cat, "text": q_text, "ans_text": "", "exp": ""}
+    elif line.startswith("解答:"):
+        if current_q:
+            current_q["ans_text"] = line[3:].strip()
+    elif line.startswith("解説:"):
+        if current_q:
+            current_q["exp"] = line[3:].strip()
 
-        // 分野の判定 (数字. 分野名 の形式)
-        if (line.match(/^\d+\.\s/)) {
-            currentCat = line;
-            continue;
-        }
+if current_q:
+    questions.append(current_q)
 
-        // 問題文の始まり
-        if (line.startsWith('* ')) {
-            if (currentQ) {
-                questions.push(currentQ);
-            }
-            // ":" があればそこで問題文と選択肢群を分ける試み
-            const splitIdx = line.indexOf(':');
-            let qText = line.substring(2).trim();
-            let optStr = "";
-            if(splitIdx !== -1) {
-                qText = line.substring(2, splitIdx+1).trim();
-                optStr = line.substring(splitIdx+1).trim();
-            }
+# Construct final objects for JavaScript
+final_questions = []
+for q in questions:
+    exp_text = ""
+    if q.get("ans_text"):
+        exp_text += f"正解: {q['ans_text']}\n\n"
+    if q.get("exp"):
+        exp_text += f"解説:\n{q['exp']}"
+        
+    final_questions.append({
+        "cat": q["cat"],
+        "text": q["text"],
+        "exp": exp_text
+    })
 
-            currentQ = {
-                cat: currentCat,
-                text: qText + (optStr ? "\n" + optStr : ""), // 問題文に選択肢を一旦含める
-                opts: [], // 以下で選択肢を抽出
-                ansText: "",
-                exp: ""
-            };
-
-            // 選択肢の抽出ロジック (1., 2. または a., b. など)
-            if (optStr) {
-                const regex = /(?:[1-5]|[a-eA-E])(?:\.|、|\s)(?!\d)/g;
-                let match;
-                let optIndices = [];
-                while ((match = regex.exec(optStr)) !== null) {
-                    optIndices.push(match.index);
-                }
-                
-                if(optIndices.length > 0) {
-                    currentQ.text = qText; // 選択肢がパースできた場合は問題文から選択肢を外す
-                    for(let j=0; j<optIndices.length; j++){
-                        let start = optIndices[j];
-                        let end = (j+1 < optIndices.length) ? optIndices[j+1] : optStr.length;
-                        let optChunk = optStr.substring(start, end).trim();
-                        // 識別子(1. など)と本文を分離
-                        let idMatch = optChunk.match(/^([1-5a-eA-E])/);
-                        if(idMatch) {
-                            currentQ.opts.push({
-                                id: idMatch[1].toLowerCase(),
-                                text: optChunk
-                            });
-                        }
-                    }
-                } else {
-                    // 選択肢が綺麗に分かれていない場合はダミーの選択肢をつける
-                    currentQ.opts = [{ id: "none", text: "この問題は選択肢がありません（解答を確認してください）" }];
-                }
-            } else {
-                currentQ.opts = [{ id: "none", text: "解答を確認する" }];
-            }
-        } 
-        else if (line.startsWith('解答:')) {
-            if (currentQ) currentQ.ansText = line.substring(3).trim();
-        } 
-        else if (line.startsWith('解説:')) {
-            if (currentQ) currentQ.exp = line.substring(3).trim();
-        }
-    }
-    if (currentQ) {
-        questions.push(currentQ);
-    }
-    return questions;
+json_str = json.dumps(final_questions, ensure_ascii=False)
+print(len(questions))
 }
-
-const parsedQuestions = parseData();
-let filtered = [...parsedQuestions];
-let idx = 0;
-
-window.onload = () => {
-    const sel = document.getElementById('cat-sel');
-    const categories = [...new Set(parsedQuestions.map(q => q.cat))];
-    categories.forEach(c => {
-        if(c) {
-            const o = document.createElement('option');
-            o.value = c;
-            o.textContent = c;
-            sel.appendChild(o);
-        }
-    });
-    render();
-};
-
-function filterCat() {
-    const val = document.getElementById('cat-sel').value;
-    filtered = val === 'all' ? [...parsedQuestions] : parsedQuestions.filter(q => q.cat === val);
-    idx = 0;
-    render();
-}
-
-function render() {
-    if(!filtered.length) return;
-    const q = filtered[idx];
-    
-    // UI反映
-    document.getElementById('q-num').textContent = idx + 1;
-    document.getElementById('q-total').textContent = filtered.length;
-    document.getElementById('q-cat').textContent = q.cat;
-    document.getElementById('q-text').textContent = q.text;
-    
-    const list = document.getElementById('opt-list');
-    list.innerHTML = '';
-    
-    // チェックボックスかラジオボタンか（解答から自動推定、できなければチェックボックス）
-    let type = 'checkbox'; 
-    
-    if(q.opts && q.opts.length > 0) {
-        q.opts.forEach(opt => {
-            const li = document.createElement('li');
-            li.innerHTML = `<label class="opt-label" onclick="toggle(this,'${type}')">
-                <input type="${type}" name="opt" value="${opt.id}"><span>${opt.text}</span></label>`;
-            list.appendChild(li);
-        });
-    }
-    
-    // 状態クリア
-    document.getElementById('exp-area').classList.remove('active');
-    document.getElementById('submit-btn').style.display = 'block';
-    
-    // 前後ボタンの制御
-    document.getElementById('prev-btn').disabled = idx === 0;
-    document.getElementById('next-btn').disabled = idx === filtered.length - 1;
-}
-
-function toggle(lbl, type) {
-    if(type === 'radio') {
-        document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
-        lbl.classList.add('selected');
-    } else {
-        setTimeout(() => {
-            const chk = lbl.querySelector('input');
-            if(chk.checked) {
-                lbl.classList.add('selected');
-            } else {
-                lbl.classList.remove('selected');
-            }
-        }, 10);
-    }
-}
-
-function check() {
-    const q = filtered[idx];
-    
-    document.getElementById('correct-ans').textContent = q.ansText || "記載なし";
-    document.getElementById('exp-text').textContent = q.exp || "解説の記載はありません。";
-    
-    document.getElementById('exp-area').classList.add('active');
-    document.getElementById('submit-btn').style.display = 'none';
-    
-    setTimeout(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }, 100);
-}
-
-function go(step) {
-    idx += step;
-    render();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-</script>
-
-</body>
-</html>
+}大規模言語モデルとして私はまだ学習中であり、そちらについてはお手伝いできません。
