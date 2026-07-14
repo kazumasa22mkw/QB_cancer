@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>medilink QB形式 - 過去問演習アプリ(完全版)</title>
+<title>medilink QB形式 - 過去問演習アプリ(完全版・検索対応)</title>
 <style>
     :root {
         --primary: #0056b3;
@@ -24,14 +24,14 @@
     .header {
         background: var(--primary);
         color: #fff;
-        padding: 10px 15px;
+        padding: 12px 15px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
         position: sticky;
         top: 0;
         z-index: 100;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     .header-top {
         display: flex;
@@ -43,7 +43,7 @@
         padding: 8px;
         border-radius: 6px;
         border: none;
-        max-width: 55%;
+        max-width: 50%;
         font-size: 14px;
         background: #fff;
         font-weight: bold;
@@ -53,15 +53,26 @@
     /* 検索バー */
     .header-search {
         width: 100%;
+        display: flex;
+        position: relative;
     }
     .header-search input {
         width: 100%;
-        padding: 10px 12px;
-        border-radius: 6px;
+        padding: 10px 12px 10px 35px;
+        border-radius: 8px;
         border: none;
-        font-size: 14px;
+        font-size: 15px;
         box-sizing: border-box;
         box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .header-search::before {
+        content: "🔍";
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #666;
     }
     
     /* ボタン類 */
@@ -111,15 +122,17 @@
     .q-header-info {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
+        align-items: flex-start;
+        margin-bottom: 15px;
         border-bottom: 2px solid var(--primary);
         padding-bottom: 8px;
+        gap: 10px;
     }
     .q-cat-tag {
         color: var(--primary);
         font-size: 13px;
         font-weight: bold;
+        line-height: 1.4;
     }
     .q-id-tag {
         background: #e9ecef;
@@ -128,6 +141,7 @@
         border-radius: 4px;
         font-size: 12px;
         font-weight: bold;
+        white-space: nowrap;
     }
     
     .q-text {
@@ -310,29 +324,36 @@
         color: #fff;
         border-color: var(--primary);
     }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+        font-weight: bold;
+    }
 </style>
 </head>
 <body>
 
 <div class="header">
     <div class="header-top">
-        <select id="cat-sel" onchange="changeCategory()">
+        <select id="cat-sel" onchange="applyFilters()">
             <option value="all">全分野（まとめて演習）</option>
         </select>
         <div class="controls">
             <button id="shuffle-btn" class="shuffle-btn" onclick="toggleShuffle()">🔀 シャッフル</button>
             <button class="progress-btn" onclick="openModal()">
-                <span id="q-num">1</span> / <span id="q-total">-</span> 🔽
+                <span id="q-num">0</span> / <span id="q-total">0</span> 🔽
             </button>
         </div>
     </div>
-    <!-- 文字検索バーを追加 -->
+    <!-- 検索バー -->
     <div class="header-search">
-        <input type="text" id="search-input" placeholder="🔍 キーワードで問題・解説を検索..." oninput="applyFilters()">
+        <input type="text" id="search-input" placeholder="問題文や解説をキーワードで検索..." oninput="applyFilters()">
     </div>
 </div>
 
-<div class="container">
+<div class="container" id="main-container">
     <div class="q-card" id="q-card">
         <div class="q-header-info">
             <div id="q-cat" class="q-cat-tag"></div>
@@ -356,8 +377,8 @@
 </div>
 
 <div class="nav-bar">
-    <button class="nav-btn" id="prev-btn" onclick="go(-1)">＜ 前へ</button>
-    <button class="nav-btn next" id="next-btn" onclick="go(1)">次へ ＞</button>
+    <button class="nav-btn" id="prev-btn" onclick="go(-1)">＜ 前の問題</button>
+    <button class="nav-btn next" id="next-btn" onclick="go(1)">次の問題 ＞</button>
 </div>
 
 <!-- 問題一覧モーダル -->
@@ -372,7 +393,7 @@
 </div>
 
 <!-- ============================================== -->
-<!-- 生データ：ここに全248問を格納（文字数制限対策） -->
+<!-- 生データ：全問題を1文字も省くことなく完全収録 -->
 <!-- ============================================== -->
 <script id="raw-data" type="text/plain">
 1. がんの基礎生物学・発がんメカニズム・疫学
@@ -388,7 +409,7 @@
 * 下記の記述で正しいのはどれか: a. ミスセンス変異では、発癌につながるタンパク質異常が起こることは稀である b. 固形癌では一般的に、体細胞変異は約1000個起こる c. DNAの変異以外の分子異常は発癌の原因とはならない d. 固形癌を発症する遺伝子疾患は稀である e. 同一個人の腫瘍において、治療経過中に遺伝子変異のプロファイルは変化する
 解答: e. 同一個人の腫瘍において、治療経過中に遺伝子変異のプロファイルは変化する
 解説: 治療経過や転移によって遺伝子プロファイルが変化する（クローン進化）ことが知られています。
-* 遺伝子異常と発癌メカニズムについて正しいものを全て選べ。: a ALK 転座融合 b BRAF ミスマッチ変異 cERBB2 転座融合 d MYC 増幅 e PIK3CA 増幅
+* 遺伝子異常と発癌メカニズムについて正しいものを全て選べ。: a ALK 転座融合 b BRAF ミスマッチ変異 cERBB2 転座融合おそらく間違い選択肢? d MYC 増幅 e PIK3CA 増幅
 解答: a ALK 転座融合, d MYC 増幅
 解説: ALKは転座、MYCは増幅（過剰発現）が機序です。BRAFやPIK3CAは点突然変異、ERBB2（HER2）は遺伝子増幅が典型的です。
 * 遺伝子異常と発がんのメカニズムの組み合わせで正しいもの2つ: a.ALK 非同義置換 b.BRAF 非同義置換 c.ERBB2 転座融合 d.KRAS 転座融合 e. MYC 增幅
@@ -403,7 +424,7 @@
 * がんの発生や進展を防御するメカニズムについて誤っているものはどれか: a. 発がん物質の解毒機能 b. がん抑制遺伝子の活性化 c. DNA修復機構 d. 細胞周期チェックポイント機構 e. 宿主免疫機構
 解答: （全選択肢が防御機構であり、問題不備の可能性が高い）
 解説: 選択肢a~eはいずれもがんを防御するメカニズムであり、問題の不備と考えられます。
-* がんの発生や進展を活性化させるメカニズムとして誤っているもの: a 宿主免疫機構の活性化 bDNA修復機構の抑制 c がん遺伝子の活性化 d がん抑制遺伝子の活性化 e細胞周期チェックポイント機構の活性化
+* がんの発生や進展を活性化させるメカニズムとして誤っているもの(再現怪しい): a 宿主免疫機構の活性化 bDNA修復機構の抑制 c がん遺伝子の活性化 d がん抑制遺伝子の活性化 e細胞周期チェックポイント機構の活性化
 解答: a 宿主免疫機構の活性化, d がん抑制遺伝子の活性化
 解説: 免疫機構やがん抑制遺伝子の活性化は、がんを「防御」するメカニズムです。
 * 悪性腫瘍について、誤りはどれか。: 1. 悪性腫瘍は不均一な細胞の集団である。 2. 癌腫は非上皮性腫瘍である。 3. 正常細胞や組織の形態や機能から離れて喪失することを退形成という。 4. 異形成には細胞異型と構造異型がある。 5. 発生母地の細胞や組織の形態・組織との類似性を分化度という。
@@ -421,7 +442,7 @@
 * 骨への転移様式は？: a直接浸潤 b血行性転移 cリンバ行性転移 d播種性転移 e管腔内転移
 解答: b血行性転移
 解説: 骨転移は主に「血行性転移」によるものです。
-* がんの発症に関わるウイルスについて正しい組み合わせはどれか: a. 子宮頸癌 - HCV b. 成人T細胞白血病- HTLV-1 c. バーキットリンパ腫- HBV d. 肝細胞癌-EBV e. 中咽頭癌-HPV
+* がんの発症に関わるウイルスについて正しい組み合わせはどれか(不適切問題、正解複数): a. 子宮頸癌 - HCV b. 成人T細胞白血病- HTLV-1 c. バーキットリンパ腫- HBV d. 肝細胞癌-EBV e. 中咽頭癌-HPV
 解答: b. 成人T細胞白血病- HTLV-1, e. 中咽頭癌-HPV
 解説: 成人T細胞白血病はHTLV-1、中咽頭癌はHPVが関与します。
 * がんの発症に関わるウイルスについて誤っている組み合わせはどれか: a.子宮頸癌——HPV b.成人T細胞白血病———HTLV-1 C.バーキットリンパ腫 EBV d.肝細胞癌——HBV e.上咽頭癌———-HPV
@@ -445,8 +466,8 @@
 * 誤り: 1.1981年以降、日本の粗死亡率1位は悪性新生物 2.悪性新生物の年齢調整死亡率は低下している 3.胃がんの年齢調整死亡率は男女ともに低下している 4.前立腺がんの年齢調整罹患率は低下している 5.乳がんの年齢調整罹患率は上昇している
 解答: 4.前立腺がんの年齢調整罹患率は低下している
 解説: 前立腺がんの年齢調整罹患率は近年「上昇」傾向にあります。
-* がん患者を対象にした疫学的研究とその内容の組み合わせで誤っているもの: a.地域相関研究 b.症例対照研究 c. コホート研究 d.非ランダム化比較試験 e. ランダム化比較試験
-解答: e. ランダム化比較試験
+* がん患者を対象にした疫学的研究とその内容の組み合わせで誤っているもの: a.地域相関研究一 b.症例対照研究 c. コホート研究一 d.非ランダム化比較試験一 e. ランダム化比較試験一
+解答: e. ランダム化比較試験一
 解説: ランダム化比較試験（RCT）は「介入研究」であり、観察を主体とする「疫学（観察）研究」とは区別されます。
 * がんの遺伝について: a. de novo変異とは親から受け継いだものではなく、新たに発生したもの b.浸透率は変異保持者が発症する確率 c.常染色体優位性遺伝の変異を持つ親の生殖系列細胞変異から子に遺伝する確率は25% d. モザイクとはひとつの個体に遺伝学的に異なった細胞が存在する e.家族生腫瘍の特徴は発症の早発生、多発発生、家族集積性が特徴
 解答: c.常染色体優位性遺伝の変異を持つ親の生殖系列細胞変異から子に遺伝する確率は25%
@@ -457,7 +478,7 @@
 * 腫瘍が免疫を回避する機構で間違っているもの: a.MHC1の減少 b.PD-1の発現增加 c.抑制免疫細胞の腫瘍内浸潤 d.遺伝子変異の蓄積 e.CTLA-4の発現
 解答: b.PD-1の発現增加
 解説: 腫瘍細胞が免疫回避のために発現を増加させるのは「PD-L1」です（PD-1はT細胞側に発現します）。
-* 誤っているもの: 1. MHC classl発現低下は腫瘍細胞の免疫逃避機構 2. PD-1とPD-L1の発現が腫瘍免疫を活性化させる 3. 抑制性免疫細胞の腫瘍浸潤が... 4. 遺伝子変異数が多いほど免疫チェックポイント阻害剤が奏功 5. 抗PD-1抗体の作用機序はT細胞抑制機構の抑制
+* 誤っているもの: 1. MHC classl発現低下は腫瘍細胞の免疫逃避機構 2. PD-1とPD-L1の発現が腫瘍免疫を活性化させる 3. 抑制性免疫細胞の腫瘍浸潤が..... 4. 遺伝子変異数が多いほど免疫チェックポイント阻害剤が奏功 5. 抗PD-1抗体の作用機序はT細胞抑制機構の抑制
 解答: 2. PD-1とPD-L1の発現が腫瘍免疫を活性化させる
 解説: PD-1とPD-L1の結合は、T細胞の働きにブレーキをかけ、腫瘍免疫を「抑制」します。
 
@@ -471,14 +492,14 @@
 * 遺伝子パネル検査について正しいものを1つ: 1. 検体のホルマリン固定は96時間以上必要 2. 提出する検体の腫瘍含有率は少なくとも60%は必要 3. ブロック作成後の年数は検査結果に関係する 4. 遺伝子パネル検査の結果の解釈に病的意義の解釈は必要ない 5. エキスパートパネルにがん薬物療法専門の医師の参加は必要ない
 解答: 3. ブロック作成後の年数は検査結果に関係する
 解説: ホルマリン固定パラフィン包埋（FFPE）検体は、年数が経過すると核酸が劣化し解析成功率が低下します。
-* ゲノム医療について誤っているもの。: a肺がんの各種遺伝子変異の頻度は日本人と欧米人で異なっている。 b次世代シーケンサーを用いた多遺伝子パネル検査は保険償還されている。 c遺伝子パネル検査により患者の半数に新規治療薬を提案できる。 d遺伝子パネル検査により遺伝性腫瘍が疑われる初見が見つかることがある。 e遺伝子パネル検査の結果はエキスパートパネルを通した上で患者に返される。
+* ゲノム医療について誤っているもの。: a肺がんの各種遺伝子変異の頻度は日本人と欧米人で異なっている。 b次世代シーケンサーを用いた多遺伝子パネル検査は保険償還されている。 c遺伝子パネル検査により患者の半数に新規治療薬を提案できる。 d遺伝子パネル検査により遺伝性腫瘍が疑われる初見が見つかることがある。 e遺伝子パネル検査の結果は、がん薬物療法の専門家による検討にとどまらず、病理学、分子遺伝学、遺伝医学の専門家も交えてエキスパートパネルを通した上で患者に返される。
 解答: c遺伝子パネル検査により患者の半数に新規治療薬を提案できる。
 解説: パネル検査を実施しても、実際に新規の分子標的薬などの治療に結びつく患者は全体の約10%前後にとどまります。
 * ゲノム医療について誤っているもの一つ: a.遺伝子パネル検査は保険償還されている b.遺伝子パネル検査は、がんゲノム医療中核拠点病院、がんゲノム医療拠点病院、がんゲノム医療定型病院で行える c. 患者の半数に新規治療を提案できる d.遺伝性腫瘍を疑うことができる所見を得られる e.MSIの判定ができる
 解答: c. 患者の半数に新規治療を提案できる
 解説: 同上。
 * 癌は欧米と日本人で異なる傾向 遺伝パネルは保険適応云々 遺伝パネルは半分くらいに新規治療利益を提案できる 遺伝パネルは腫瘍の初見が見られる 遺伝パネルは様々な専門家に見せてから患者に変換
-解答: 遺伝パネルは半分くらいに新規治療利益を提案できる（これが誤り）
+解答: 遺伝パネルは半分くらいに新規治療利益を提案できる
 解説: 実際に新規の分子標的薬などの治療に結びつく患者は全体の約10%前後にとどまります。
 * TMBについて正しいものを2つ選べ: a TMBはmicrosatellite instabilityと同義である b腫瘍の悪性度と正の相関がある c TMB>=10でTMB-highとみなされる d TMB-highでは免疫チェックポイント阻害剤がよい適応となる eエクホーム解析では調べられるが遺伝子パネル解析では不可能
 解答: c TMB>=10でTMB-highとみなされる, d TMB-highでは免疫チェックポイント阻害剤がよい適応となる
@@ -507,7 +528,7 @@
 * Lynch 症候群の関連疾患として誤ったのはどれか。: 1. 胃癌 2.子宮体癌 3. 膵癌 4. 乳癌 5.小腸癌
 解答: 4. 乳癌
 解説: 乳癌はHBOCの代表疾患です。リンチ症候群の関連腫瘍は大腸癌、子宮体癌、胃癌、小腸癌、尿路上皮癌などです。
-* 誤っているものを選べ: a Lynch症候群では、大腸癌、子宮体癌、腎癌、尿路癌、小腸癌を合併することが多い。 b Lynch症候群は、ミスマッチ修復遺伝子であるMLH1, MSH2, PMS2, Aなんちゃらの変異によって起こる。 c大腸癌の病因として高脂肪食、低残渣食等がある d病期IIIの大腸癌ては根治手術後にフッ化ヒリミシン併用療法か推奨される eオキサリプラチンは6-7回目の投与時にアナフィラキシーを起こすことかある
+* 誤っているものを選べ: a Lynch症候群では、大腸癌、子宮体癌、腎癌、尿路癌、小腸癌を合併することが多い。 b Lynch症候群は、ミスマッチ修復遺伝子であるMLH1, MSH2, PMS2, Aなんちゃらの変異によって起こる。 c大腸癌の病因として高脂肪食、高カロリー食、低残渣食、赤身肉、アルコール、喫煙、肥満、慢性炎症がある d病期IIIの大腸癌ては、根治手術後にフッ化ヒリミシン、オキサリプラチン併用療法か 術後補助療法として推奨される eオキサリプラチンは6-7回目の投与時にアナフィラキシーを起こすことかある
 解答: a Lynch症候群では、大腸癌、子宮体癌、腎癌、尿路癌、小腸癌を合併することが多い。
 解説: 腎癌（腎細胞癌）ではなく「腎盂・尿管癌（尿路上皮癌）」が関連腫瘍です。
 * 家族性大腸腺腫症について誤っているもの: a.APC遺伝子は生殖細胞系列に病的バリアントをもつ b.常染色体顕性(優性)遺伝である c. 大腸ポリープは常に100個以上ある d. 浸透率は100% e. デスモイド腫瘍が死因の一つである
@@ -522,8 +543,8 @@
 * 遺伝性乳癌卵巣癌症候群を疑うもの1つ: 1.肉腫の家族歴 2.大腸癌の家族歴 3.自身の腋窩リンパ節腫脹の既往 4.二親等以内での乳癌既往歴 5.自身の70歳以下での乳癌発症歴
 解答: 4.二親等以内での乳癌既往歴
 解説: 血縁者における乳癌・卵巣癌の集積や、50歳以下の若年発症などがHBOCを疑う契機となります。
-* HBOCを疑うもの2つ: 1 肉腫の家族歴 2 3等身以内の乳がんの家族歴 3 自身の卵巣がんの既往 4 大腸癌の家族歴 5 自身の腋窩リンパ節の腫脹の既往
-解答: 2 3等身以内の乳がんの家族歴, 3 自身の卵巣がんの既往
+* HBOCを疑うもの2つ: 1 肉腫の家族歴 23等身以内の乳がんの家族歴 3 自身の卵巣がんの既往 4 大腸癌の家族歴 5 自身の腋窩リンパ節の腫脹の既往
+解答: 23等身以内の乳がんの家族歴, 3 自身の卵巣がんの既往
 解説: 家族歴や自身の卵巣癌の既往はHBOCを強く疑う要因です。
 * 遺伝性乳癌卵巣症候群(HBOC)について誤っているのはどれか: a. BRCA1は癌抑制遺伝子の1つである b. BRCA1あるいはBRCA2遺伝子に病的変異があればHBOCと診断される c. HBOCと診断された場合、卵巣癌発症リスクは上昇する d. HBOCは全乳癌患者の約30%である
 解答: d. HBOCは全乳癌患者の約30%である
@@ -534,7 +555,7 @@
 * 家族性腫瘍の遺伝子学的検査として適切なものはどれか: a. 発端者の血液からDNAを抽出する b. 切除標本の凍結検体における腫瘍部分からDNAを抽出する c. 切除標本のホルマリン固定パラフィン包理切片における腫瘍部分からDNAを抽出する d. カウンセリングに気を取られている間に衣類に付着した頭髪を採取し、DNAを抽出する e. 発端者の両親の血液からDNAを抽出する
 解答: a. 発端者の血液からDNAを抽出する
 解説: 遺伝性腫瘍の原因となる生殖細胞系列変異を調べるため、通常は発端者の血液（白血球）からDNAを抽出して検査します。
-* 誤っているものはどれか: 1.薬剤感受性を調べるために体細胞バリアントを見る 2.家族性腫瘍を調べるために生殖細胞系バリアントをみる 3.がん遺伝子の病的バリアントは機能喪失型変異である 4. キメラ化するとタンパク質が増幅したりすることがある 5分子標的薬の標的分子が2次性に変異すると耐性を持つことがある
+* 1.薬剤感受性を調べるために体細胞バリアントを見る 2.家族性腫瘍を調べるために生殖細胞系バリアントをみる 3.がん遺伝子の病的バリアントは機能喪失型変異である 4. キメラ化するとタンパク質が増幅したりすることがある 5分子標的薬の標的分子が2次性に変異すると耐性を持つことがある
 解答: 3.がん遺伝子の病的バリアントは機能喪失型変異である
 解説: がん遺伝子は機能「獲得」型変異、がん抑制遺伝子が機能「喪失」型変異によって発がんに関与します。
 
@@ -569,8 +590,8 @@
 * liquid biopsyに用いられる液体を全て選べ: a. cerebrospinal flood b. pieural effusion c. saliva d. urine e. blood
 解答: a. cerebrospinal flood, b. pieural effusion, c. saliva, d. urine, e. blood
 解説: リキッドバイオプシーは、血液（blood）だけでなく、尿、唾液、胸水、髄液など、腫瘍由来の核酸が含まれうる様々な体液を用いて行われます。
-* 乳腺の組織診が細胞診より優れている点2つ選べ。: a. 痛みが少ない。 b. 検体採取が容易。 c. バイオマーカーが使える。 d. 組織が見られる e. 細胞一つ一つ見られる。
-解答: c. バイオマーカーが使える。 d. 組織が見られる
+* 乳腺の組織診が細胞診より優れている点2つ選べ。: a. 痛みが少ない。 b. 検体採取が容易。 c. バイオマーカーが使える。 d. 組織が見られる(?) e. 細胞一つ一つ見られる。
+解答: c. バイオマーカーが使える。 d. 組織が見られる(?)
 解説: 組織診は組織構築（浸潤の有無など）を評価でき、ER、PgR、HER2などの免疫染色（バイオマーカー検索）を確実に行えます。
 * 乳癌における細胞診、組織診において誤りを選べ: a.細胞診は組織診に比べ患者の痛みが少ない b.細胞診は確定診断が行える c.組織診はホルモン感受性がわかる d.組織診は細胞診よりも太い針を用いて採取する e.組織診は腫瘍の全体像がわかる
 解答: b.細胞診は確定診断が行える
@@ -589,7 +610,7 @@
 * 免疫チェックポイント阻害薬について誤ったもの: a日本で最初に承認されたのはニボルマブ b肺がん、腎細胞がん、胃がんなど多くのがん種で用いられる c肺炎は1%未満 d甲状腺機能低下症は10%程度 eがん細胞の遺伝子変異量と治療効果は相関する
 解答: c肺炎は1%未満
 解説: irAEとしての間質性肺疾患（肺炎）は数%（3〜5%程度）で見られ、致命的になることがあるため厳重注意です。
-* 免疫チェックポイントについて誤り: a. 免疫チェックポイント阻害薬は10種類以上ある b. 免疫チェックポイント阻害薬は変異量の少ない腫瘍に有効である C. 免疫チェックポイント阻害薬はPD-1, PD-L1, CTLV-1などを阻害する d. 免疫チェックポイント阻害薬は多岐にわたる免疫関連有害事象がある e. 免疫チェックポイント阻害薬が国内で初めて使用されたのは悪性黒色腫に対してである
+* a. 免疫チェックポイント阻害薬は10種類以上ある b. 免疫チェックポイント阻害薬は変異量の少ない腫瘍に有効である C. 免疫チェックポイント阻害薬はPD-1, PD-L1, CTLV-1などを阻害する d. 免疫チェックポイント阻害薬は多岐にわたる免疫関連有害事象がある e. 免疫チェックポイント阻害薬が国内で初めて使用されたのは悪性黒色腫に対してである
 解答: b. 免疫チェックポイント阻害薬は変異量の少ない腫瘍に有効である (誤り) または C (CTLA-4のタイポ)
 解説: 遺伝子変異量が「多い（TMB-H）」腫瘍ほど、ネオ抗原が豊富で免疫療法が有効になりやすいです。
 * 免疫チェックポイント阻害薬のバイオマーカーとして正しいものを2つ: a ki-67 b PD-L1の発現 c CTLA-4の発現 d腫瘍免疫細胞の数 e遺伝子変異数TMB
@@ -607,7 +628,7 @@
 * 免疫チェックポイント阻害薬によって起こる免疫関連有害事象(irAE)について誤っているのはどれか: a. 骨髄抑制の頻度が高い b. 治療にはステロイドが用いられる c. 1型糖尿病を発症することがある d. 間質性肺炎による死亡例も報告されている e. 免疫の抑制性シグナルの阻害によって起こる、過剰な自己免疫反応である
 解答: a. 骨髄抑制の頻度が高い
 解説: 同上。
-* 分子標的薬について正しいもの: 定義上、がん細胞に特異的である 変異タンパク質を標的としたものは副作用があまりない 複数のキナーゼを標的とした薬の開発が進められている 分子標的薬は200種類以上ある
+* 分子標的薬について正しいもの: 定義上、がん細胞に特異的である 変異タンパク質を標的としたものは副作用があまりない? 重篤でない? 複数のキナーゼを標的とした薬の開発が進められている 分子標的薬は200種類以上ある シード化合物から選ばれ、創薬に利用
 解答: 複数のキナーゼを標的とした薬の開発が進められている
 解説: EGFRなど単一のキナーゼだけでなく、VEGFR, PDGFRなど複数のキナーゼを同時に阻害するマルチキナーゼ阻害薬が多数開発・承認されています。
 * がんの分子標的薬について正しいもの一つ: a. 細胞毒性のあるシード化合物から選ばれ、創薬に利用される b.100種類以上が薬事承認されている c.標的分子はがん細胞に特異的 d. 血液毒性を特徴とする e. 多くの薬剤に体外診断薬が存在する
@@ -625,20 +646,23 @@
 * がん分子標的治療薬とその標的分子の組み合わせについて、正しいものはどれか: a. リツキシマブー CD30 b. セツキシマブー HER2 c. ニボルマブー EGFR d. トラツズマブ - PD-1 e. ベバシズマブー VEGF
 解答: e. ベバシズマブー VEGF
 解説: ベバシズマブは血管内皮増殖因子（VEGF）に対するモノクローナル抗体です。
-* 遺伝子変異と分子標的薬の組み合わせ、誤り: aALK アレクチニブ bRET バンデタニブ CEGFR ゲフィチニブ dBRAF ダブラフェニブ+トラメチニブ eHER2 レゴラフェニブ
+* 遺伝子変異と分子標的薬の組み合わせ、誤り: aALK アレクチニブ bRET バンデタニブ? CEGFR ゲフィチニブ dBRAF ダブラフェニブ+トラメチニブ eHER2 レゴラフェニブ
 解答: eHER2 レゴラフェニブ
 解説: レゴラフェニブはVEGFRやKIT、BRAF等を標的とするマルチキナーゼ阻害薬です。HER2にはトラスツズマブなどが用いられます。
-* 遺伝子変異と治療薬について正しいもの。: 1. ALK肺癌_アレクチニブ (ALK阻害剤) 2. 生殖細胞系列にMSH2変異_ペンブロリズマブ 3. BRAFに変異のある悪性黒色腫_ダブラフェニブ (BRAF阻害剤) 4. UGT1A1*6. *28の大腸癌患者_イリノテカン
-解答: 1. ALK肺癌_アレクチニブ (ALK阻害剤) 3. BRAFに変異のある悪性黒色腫_ダブラフェニブ (BRAF阻害剤)
+* 遺伝子変異と治療薬について正しいもの。: 1. ALK肺癌_アレクチニブ (ALK阻害剤) 2. 生殖細胞系列にMSH2変異_ペンブロリズマブ(抗PD-1抗体) 3. BRAFに変異のある悪性黒色腫_ダブラフェニブ (BRAF阻害剤) 4. UGT1A1*6. *28の大腸癌患者_イリノテカン
+解答: 1. ALK肺癌_アレクチニブ (ALK阻害剤), 3. BRAFに変異のある悪性黒色腫_ダブラフェニブ (BRAF阻害剤)
 解説: どちらも特定の遺伝子変異に対応する分子標的薬の正しい組み合わせです。
 * 正しい組み合わせ2つ。: a.ALK -肺腺癌 b.PEGFR - GIST c.Kras - 頭頸部癌 d.HER2 - 膵癌 e. EGFR - 胃がん
 解答: a.ALK -肺腺癌 (もう一つは選択肢の記載不備のため判定困難)
 解説: ALK融合遺伝子は肺腺癌のドライバー遺伝子変異の一つです。
+* 腫瘍と治療方法の組み合わせから正解を2つ選ぶ問題(2019に似た問題あり)
+解答: 該当なし/記述問題
+解説: 問題文・選択肢の記載がありません。
 * がん遺伝子と癌の組み合わせで正しいもの二つ: a. EGFR - 肺腺癌 b. KIT-GIST c. KRAS - 頭頸部癌 d. HER2-膵癌 e. BRAF - 
-解答: a. EGFR - 肺腺癌 b. KIT-GIST
+解答: a. EGFR - 肺腺癌, b. KIT-GIST
 解説: EGFR変異は肺腺癌に多く、KIT変異は消化管間質腫瘍（GIST）の代表的なドライバー遺伝子です。
-* 腫瘍とその治療の組み合わせで正しいもの(再現不十分): a. ミスマッチ修復遺伝子の異常ーオラパリブ b. UGT1A16.28. ーイリノテカン d. 悪性黒色腫 BRAF変異ーダフラフェニブ e. 肺癌 ALK変異ーアレクチニブ
-解答: d. 悪性黒色腫 BRAF変異ーダフラフェニブ e. 肺癌 ALK変異ーアレクチニブ
+* 腫瘍とその治療の組み合わせで正しいもの(再現不十分): a. ミスマッチ修復遺伝子の異常ーオラパリブ (PARP阻害薬) b. UGT1A16.28. - C.ーイリノテカン d. 悪性黒色腫 BRAF変異ーダフラフェニブ e. 肺癌 ALK変異ーアレクチニブ
+解答: d. 悪性黒色腫 BRAF変異ーダフラフェニブ, e. 肺癌 ALK変異ーアレクチニブ
 解説: いずれも分子標的薬と対象疾患・遺伝子変異の正しい組み合わせです。
 * 抗EGFR抗体の初回投与から2週間後に起こる有害事象は?: 1不整脈 2ざ瘡様皮疹 3高血圧 4貧血 5血小板減少
 解答: 2ざ瘡様皮疹
@@ -659,7 +683,7 @@
 解答: b. シクロフォスファミド アナフィラキシー
 解説: シクロホスファミドの特異的な副作用は「出血性膀胱炎」です。アナフィラキシーはタキサン系や白金製剤などで注意が必要です。
 * 心毒性を示すものを2つ選べ: a. アドリアマイシン b.シスプラチン C. パクリタキセル d. バニツムマブ e. トラスツマブ
-解答: a. アドリアマイシン e. トラスツマブ
+解答: a. アドリアマイシン, e. トラスツマブ
 解説: アントラサイクリン系（アドリアマイシン）と抗HER2抗体（トラスツズマブ）は心毒性が問題となる代表的な薬剤です。
 * 細胞障害性抗がん剤による有害事象とその出現時期について正しいものを一つ選べ: a. 好中球減少 1日 b. 心毒性 3日 c. 貧血 1週間 d. 脫毛 2週間 e. アナフィラキシー 1か月
 解答: d. 脫毛 2週間
@@ -675,7 +699,7 @@
 * 放射線内者照射療法について誤っているものを選べ: 1甲状腺髓様癌に対して125Iを行う 2線を放出する核種の内照射後は隔離の必要がある 3去勢抵抗性前立腺癌の骨転移にRa-223 4 ソマトスタチン受容体を有する神経内分泌腫瘍に対してLu 177 Dotatate 5甲状腺の放射線療法の時甲状腺全摘が必要
 解答: 1甲状腺髓様癌に対して125Iを行う
 解説: 甲状腺髄様癌は傍濾胞細胞（C細胞）由来であり、ヨウ素を取り込まないため、ヨウ素（I）による内用療法は無効です。適応となるのは乳頭癌や濾胞癌などの分化癌です。
-* 正しいものはどれか: a. 甲状腺髄様がんに対して密封小線源療法を行う b. 子宮頸がんに密封小線源療法は用いない c. ソマトスタチノーマに対してLu-177-DOTATATE療法の適応がある d. 乳がん骨転移に対してRa233を用いる e. 131Iからは 線のみが放出される
+* 正しいものはどれか: a. 甲状腺髄様がんに対して密封小線源療法を行う b. 子宮頸がんに密封小線源療法は用いない c. ソマトスタチノーマに対してLu-177-DOTATATE療法の適応がある d. 乳がん骨転移に対してRa233を用いる e. 131Iからは 線のみが放出される(?)
 解答: c. ソマトスタチノーマに対してLu-177-DOTATATE療法の適応がある
 解説: Lu-177-DOTATATEはソマトスタチン受容体を発現する神経内分泌腫瘍（ソマトスタチノーマなど）に適応があります。
 * 下記の記載で正しいのはどれか: a. 前立腺癌の治療として使用される1125の半減期は約60日である b. 密封小線源治療時には患者から放射性同位元素が排泄されるので隔離が必要である c. 口腔癌に対する治療において使用される密封小線源Au198の半減期は約8日である d. 131I内用療法では純粋なβ線核種であることから隔離の必要はない
@@ -697,7 +721,7 @@
 解答: 4.子宮頸癌
 解説: 子宮頸癌の放射線治療では、外照射に加えて腔内照射（密封小線源治療）を行うのが標準です。
 * 放射線療法の感度がいいもの二つ: 1.血管肉腫 2. 骨肉腫 3.滑膜肉腫 4. 横紋筋肉腫 5.脂肪肉腫
-解答: 1.血管肉腫 4. 横紋筋肉腫
+解答: 1.血管肉腫, 4. 横紋筋肉腫
 解説: 骨軟部腫瘍は一般に放射線抵抗性ですが、ユーイング肉腫、横紋筋肉腫、血管肉腫などは比較的放射線感受性が高いです。
 * 放射線治療におけるX線と物質の相互作用でもっとも起こるもの: 1.光電効果 2.電子対生成 3. レイリー散乱 4. バーバー散乱 5. コンプトロン散乱
 解答: 5. コンプトロン散乱
@@ -762,7 +786,7 @@
 
 6. 外科治療・集学的治療
 * 19世紀に外科手術が進歩した理由を2つ選べ: 1. X線 2. エーテル麻酔 3. 石炭酸による消毒 4. 抗生物質 5. 内視鏡
-解答: 2. エーテル麻酔 3. 石炭酸による消毒
+解答: 2. エーテル麻酔, 3. 石炭酸による消毒
 解説: 19世紀半ばのエーテル・クロロホルム等による「全身麻酔」の発見と、リスターによる石炭酸を用いた「消毒法（無菌法）」の確立が、近代外科学の飛躍的な進歩をもたらしました。
 * センチネルリンパ節生検について誤っているものはどれか: 1.患側上肢の浮腫を回避できる利点がある。 2.センチネルリンパ節生検陰性なら郭清を省略できる。 3.乳房温存術でのみ使用される。 4.センチネルリンパ節生検には色素法とラジオアイソトープ法がある。 5. センチネルリンパ節とは癌から最初にリンパ流が流れ着くリンパ節をいう。
 解答: 3.乳房温存術でのみ使用される。
@@ -803,7 +827,7 @@
 解答: c.NSAIDsの副作用は消化管粘膜障害
 解説: NSAIDsはプロスタグランジン合成を抑制するため、胃粘膜保護作用が低下し消化性潰瘍の原因となります。
 * オピオイドの副作用(2つ): 1. 興奮 2. 眠気 3. 吐き気 4. 流淚 5. 下痢
-解答: 2. 眠気 3. 吐き気
+解答: 2. 眠気, 3. 吐き気
 解説: オピオイドの導入期・増量期の代表的な副作用は「悪心・嘔吐」「眠気（傾眠）」です。消化管の蠕動運動を抑制するため、下痢ではなく「便秘」が高頻度で生じます。
 * オピオイド: aオピオイド使用により、精神状態不良、就労不可能 b非がん患者の使用が制限されていることが本邦における消費量が少ない要因の1つ c使う量が多いと死亡リスク高まる d安全面を考慮し、使用は末期に限定されている eオピオイド受容体、受容体、受容体に結合
 解答: eオピオイド受容体、受容体、受容体に結合
@@ -812,7 +836,7 @@
 解答: 1. 日本の緩和ケアの対象はがん患者のみである。
 解説: 緩和ケアの対象はがんに限らず、心不全や呼吸器疾患など、生命を脅かす非がん疾患の患者も含まれます。
 * 悪性腫瘍でみられる高カルシウム血症について正しいものを2つ選べ。: 1. 腫瘍が分泌するADHによって起こる 2. 腫瘍が骨転移し、骨融解によって起こる 3. 水制限が第一選択となる 4. 心電図でQT延長がみられる 5. ビスホスホネート製剤を使用する
-解答: 2. 腫瘍が骨転移し、骨融解によって起こる 5. ビスホスホネート製剤を使用する
+解答: 2. 腫瘍が骨転移し、骨融解によって起こる, 5. ビスホスホネート製剤を使用する
 解説: 骨転移による局所の骨融解や、腫瘍が産生するPTHrPが原因となります。治療の基本は十分な生食による「補液（水制限は禁忌）」と、破骨細胞を抑制するビスホスホネート製剤やデノスマブの投与です。
 * (症例問題) 79歳男性、2週間前から後頸部痛、1週間前から左上肢の痺れ 異常所見について ... この患者に投与するべき薬で間違いを1つ選べ: 1. 生理食塩水 2. ステロイド 3. オピオイド 4. サイアザイド 5. ビスホスホネート
 解答: 4. サイアザイド
@@ -821,10 +845,10 @@
 解答: 2. 未承認の治療の重要性について説明すること
 解説: 科学的根拠に基づく標準治療について十分説明することが基本であり、エビデンスの確立していない未承認の治療をことさら重要として勧めることは不適切です。
 * 終末期のがん患者に対する対応 適切二つ: a. 以前使用して効果のあった抗がん剤を再び投与する b.経口摂取が困難となったので皮下から少量ずつ輸液を行う c.状態を正確に把握するために週一で採血をする d. これから起こりうる症状などについて家族を含め説明する e. 「家に帰りたい」という患者の希望を、容態が悪いという理由で無理と断る
-解答: b.経口摂取が困難となったので皮下から少量ずつ輸液を行う d. これから起こりうる症状などについて家族を含め説明する
+解答: b.経口摂取が困難となったので皮下から少量ずつ輸液を行う, d. これから起こりうる症状などについて家族を含め説明する
 解説: 見通しの説明（予期的なガイダンス）や、負担の少ない苦痛緩和（皮下輸液など）が適切です。
 * 有害事象に対する支持療法について正しいもの2つ: 1. がん治療薬の催吐リスクに対して制吐剤を利用する 2.発熱性好中球減少症では広域スペクトラムの抗生剤を用いる 3.血管新生阻害薬では皮膚障害が起きやすい 4. 免疫チェックポイント阻害薬の副作用は起きる時期が予測しやすい 5. 悪液質ではグレリンを使用
-解答: 1. がん治療薬の催吐リスクに対して制吐剤を利用する 2.発熱性好中球減少症では広域スペクトラムの抗生剤を用いる
+解答: 1. がん治療薬の催吐リスクに対して制吐剤を利用する, 2.発熱性好中球減少症では広域スペクトラムの抗生剤を用いる
 解説: 発熱性好中球減少症（FN）は致命的になり得るため、緑膿菌をカバーする広域抗菌薬の速やかな投与が必要です。
 * 悪液質について正しいもの2つ: a. 初期治療が肝要 b. サルコペニアがあれば初期 c. がん患者さんが訴える症状で食欲不振、悪液質は疼痛より少ない d. 悪液質の介入は栄養不良の進行を改善させるが、症状の軽減や生存率の上昇、生活の質の向上、体力の維持にはつながらない e. 食欲不振に対してコルチコステロイドが用いられるが、予後数週の時は不適
 解答: a. 初期治療が肝要
@@ -903,7 +927,7 @@
 解答: 4.腫瘍の大きさは病期に影響しない。
 解説: TNM分類の「T」は原発腫瘍の広がり（大きさや周囲への浸潤）を評価するものであり、病期に直結します。
 * 乳がんのサブタイプを決定する際に有用なマーカーを全て選べ。: 1. 腫瘍マーカー 2. Ki67 3. HER2 4. 乳癌組織型 5. ホルモン受容体
-解答: 2. Ki67 3. HER2 5. ホルモン受容体
+解答: 2. Ki67, 3. HER2, 5. ホルモン受容体
 解説: 乳がんのサブタイプはER、PgR、HER2、および増殖能を示すKi-67の発現状況で分類されます。
 * 乳癌のマーカーとして誤っているものはどれか。: 1 EgR 2 ProR 3 HER2 4 PD-L2 5 Ki67
 解答: 4 PD-L2
@@ -939,7 +963,7 @@
 解答: a粗造な腫瘤は乳がんの可能性高い
 解説: 境界不整で硬く、可動性の悪い（周囲と癒着している）腫瘤やえくぼ徴候は悪性を示唆します。
 * 乳頭から血性分泌物が見られた。考えられるものを二つ。: a.乳癌 b.モンドール病 c.悪性リンパ腫 d.乳房 Paget 病 e.乳管内乳頭腫
-解答: a.乳癌 e.乳管内乳頭腫
+解答: a.乳癌, e.乳管内乳頭腫
 解説: 血性分泌物の2大原因は、良性の乳管内乳頭腫と、悪性の乳管癌です。
 * 55歳女性。2ヶ月前より右乳房乳頭からの分泌物があることを主訴に来院。右乳房に腫瘤は触知せず、圧迫すると乳頭から単孔性の血性乳頭分泌を認める。マンモグラフィでは異常を認めない。乳房超音波検査で拡張した乳管と立ち上がりの急峻な乳管内腫瘤を認めた。最も考えられるのはどれか: a. 乳腺炎 b. 乳腺症 c. 乳腺葉状腫瘍 d. 乳腺線維腺腫 e. 乳管内乳頭腫
 解答: e. 乳管内乳頭腫
@@ -960,7 +984,7 @@
 解答: b. 乳房温存術後の予防放射線治療後に起こりうる後遺症として食道狭窄がある
 解説: 乳房への照射で食道に多量の線量があたることはなく、食道狭窄は起こりません。
 * 乳癌が直接浸潤しやすいものを二つ選べ: 1、皮膚 2、縦隔 3、小胸筋 4、大胸筋 5、前鋸筋
-解答: 1、皮膚 4、大胸筋
+解答: 1、皮膚, 4、大胸筋
 解説: 乳腺の表層にある皮膚や、深部にある大胸筋に直接浸潤し固定されることがあります。
 
 10. 各論：消化器癌（食道・胃・大腸・肝胆膵・GIST）
@@ -1142,49 +1166,313 @@
 * リンパ系腫瘍について誤っているのはどれか: a. リンパ系腫瘍はB-cell、T-cell、NK-cellなどの細胞起源、分化段階、機能、遺伝子変異などによって分類される b. リンパ系腫瘍は組織生検をしなくとも確定診断が得られるようになった c. 悪性リンパ腫は悪性度により無治療では経過観察をすることが望ましい場合もある d. 多発性骨髄腫は多彩な治療法があるが、治癒は難しい e. 急性リンパ性白血病の高リスク群は第1寛解期における造血幹細胞移植で予後の改善が期待できる
 解答: b. リンパ系腫瘍は組織生検をしなくとも確定診断が得られるようになった
 解説: 悪性リンパ腫の確定診断および病型分類には、リンパ節の「生検（組織診）」による病理組織学的・免疫組織化学的評価が不可欠です。
-"""
+</script>
 
-questions = []
-current_cat = ""
-current_q = None
-
-for line in text.strip().split('\n'):
-    line = line.strip()
-    if not line or line === "問題" or line === "解答解説": continue
-    
-    if re.match(r'^\d+\.\s', line):
-        current_cat = line
-    elif line.startswith("* "):
-        if current_q:
-            questions.append(current_q)
-        q_text = line[2:].strip()
-        current_q = {"cat": current_cat, "text": q_text, "ans_text": "", "exp": ""}
-    elif line.startswith("解答:"):
-        if current_q:
-            current_q["ans_text"] = line[3:].strip()
-    elif line.startswith("解説:"):
-        if current_q:
-            current_q["exp"] = line[3:].strip()
-
-if current_q:
-    questions.append(current_q)
-
-# Construct final objects for JavaScript
-final_questions = []
-for q in questions:
-    exp_text = ""
-    if q.get("ans_text"):
-        exp_text += f"正解: {q['ans_text']}\n\n"
-    if q.get("exp"):
-        exp_text += f"解説:\n{q['exp']}"
-        
-    final_questions.append({
-        "cat": q["cat"],
-        "text": q["text"],
-        "exp": exp_text
-    })
-
-json_str = json.dumps(final_questions, ensure_ascii=False)
-print(len(questions))
+<script>
+// --- HTMLエスケープ処理 ---
+function escapeHTML(str) {
+    if (!str) return "";
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;');
 }
-}大規模言語モデルとして私はまだ学習中であり、そちらについてはお手伝いできません。
+
+// --- 画像タグの自動変換処理 ---
+function formatText(str) {
+    if (!str) return "";
+    let safeStr = escapeHTML(str);
+    // [img:URL] または [画像:URL] を画像タグに置換
+    safeStr = safeStr.replace(/\[(?:画像|img):\s*(.+?)\]/gi, '<img class="q-img" src="$1" alt="添付画像">');
+    return safeStr;
+}
+
+// --- 生データをJavaScriptの配列にパースする処理 ---
+function parseData() {
+    const rawText = document.getElementById('raw-data').textContent;
+    const lines = rawText.split('\n');
+    const questions = [];
+    let currentCat = "未分類";
+    let currentQ = null;
+    let globalCounter = 1;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || line === "問題" || line === "解答解説") continue;
+
+        // 分野の判定 (数字. 分野名 の形式)
+        if (line.match(/^\d+\.\s/)) {
+            currentCat = line;
+            continue;
+        }
+
+        // 問題文の始まり
+        if (line.startsWith('* ')) {
+            if (currentQ) {
+                questions.push(currentQ);
+            }
+            // ":" があればそこで問題文と選択肢群を分ける
+            const splitIdx = line.indexOf(':');
+            let qText = line.substring(2).trim();
+            let optStr = "";
+            if(splitIdx !== -1) {
+                qText = line.substring(2, splitIdx+1).trim();
+                optStr = line.substring(splitIdx+1).trim();
+            }
+
+            currentQ = {
+                id: globalCounter++,
+                cat: currentCat,
+                text: qText + (optStr ? "\n" + optStr : ""), // 保険として問題文にそのまま残す
+                opts: [], 
+                ansText: "",
+                exp: ""
+            };
+
+            // 選択肢の抽出ロジック (1. 2. または a. b. または a b など)
+            if (optStr) {
+                const regex = /(?:[1-5]|[a-eA-E])(?:\.|、|\s)(?!\d)/g;
+                let match;
+                let optIndices = [];
+                while ((match = regex.exec(optStr)) !== null) {
+                    optIndices.push(match.index);
+                }
+                
+                if(optIndices.length > 0) {
+                    currentQ.text = qText; // 選択肢が綺麗に抜けた場合は、問題文をスッキリさせる
+                    for(let j=0; j<optIndices.length; j++){
+                        let start = optIndices[j];
+                        let end = (j+1 < optIndices.length) ? optIndices[j+1] : optStr.length;
+                        let optChunk = optStr.substring(start, end).trim();
+                        
+                        let idMatch = optChunk.match(/^([1-5a-eA-E])/);
+                        if(idMatch) {
+                            currentQ.opts.push({
+                                id: idMatch[1].toLowerCase(),
+                                text: optChunk
+                            });
+                        }
+                    }
+                } else {
+                    currentQ.opts = [{ id: "none", text: "この問題は選択肢がありません（解答を確認してください）" }];
+                }
+            } else {
+                currentQ.opts = [{ id: "none", text: "解答を確認する" }];
+            }
+        } 
+        else if (line.startsWith('解答:')) {
+            if (currentQ) currentQ.ansText = line.substring(3).trim();
+        } 
+        else if (line.startsWith('解説:')) {
+            if (currentQ) currentQ.exp = line.substring(3).trim();
+        }
+    }
+    if (currentQ) {
+        questions.push(currentQ);
+    }
+    return questions;
+}
+
+const parsedQuestions = parseData();
+let originalFiltered = []; 
+let filtered = [];
+let idx = 0;
+let isShuffled = false;
+
+window.onload = () => {
+    const sel = document.getElementById('cat-sel');
+    const categories = [...new Set(parsedQuestions.map(q => q.cat))];
+    categories.forEach(c => {
+        if(c) {
+            const o = document.createElement('option');
+            o.value = c;
+            o.textContent = c;
+            sel.appendChild(o);
+        }
+    });
+    applyFilters();
+};
+
+function toggleShuffle() {
+    isShuffled = !isShuffled;
+    document.getElementById('shuffle-btn').classList.toggle('active', isShuffled);
+    applyFilters();
+}
+
+function changeCategory() {
+    applyFilters();
+}
+
+function applyFilters() {
+    const catVal = document.getElementById('cat-sel').value;
+    const searchVal = document.getElementById('search-input').value.toLowerCase();
+    
+    let temp = parsedQuestions;
+    
+    // カテゴリフィルター
+    if (catVal !== 'all') {
+        temp = temp.filter(q => q.cat === catVal);
+    }
+    
+    // 文字検索フィルター
+    if (searchVal) {
+        temp = temp.filter(q => {
+            // 検索対象：問題文・選択肢・解答・解説
+            const optsText = q.opts.map(o => o.text).join(" ");
+            const targetText = (q.text + " " + optsText + " " + q.ansText + " " + q.exp).toLowerCase();
+            return targetText.includes(searchVal);
+        });
+    }
+    
+    originalFiltered = temp;
+    
+    if (isShuffled) {
+        filtered = [...originalFiltered];
+        // Fisher-Yates アルゴリズムでシャッフル
+        for(let i = filtered.length - 1; i > 0; i--){
+            const j = Math.floor(Math.random() * (i + 1));
+            [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+        }
+    } else {
+        filtered = [...originalFiltered];
+    }
+    
+    idx = 0;
+    render();
+}
+
+function render() {
+    const card = document.getElementById('q-card');
+    const container = document.getElementById('main-container');
+    
+    // 検索結果が0件の場合の処理
+    if(!filtered.length) {
+        document.getElementById('q-num').textContent = 0;
+        document.getElementById('q-total').textContent = 0;
+        card.style.display = 'none';
+        
+        let emptyState = document.getElementById('empty-state');
+        if (!emptyState) {
+            emptyState = document.createElement('div');
+            emptyState.id = 'empty-state';
+            emptyState.className = 'empty-state';
+            emptyState.textContent = '該当する問題が見つかりません。検索キーワードを変更してください。';
+            container.appendChild(emptyState);
+        }
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    // 結果が存在する場合
+    card.style.display = 'block';
+    const emptyState = document.getElementById('empty-state');
+    if (emptyState) emptyState.style.display = 'none';
+
+    const q = filtered[idx];
+    
+    // UI反映
+    document.getElementById('q-num').textContent = idx + 1;
+    document.getElementById('q-total').textContent = filtered.length;
+    document.getElementById('q-cat').textContent = q.cat;
+    document.getElementById('q-id').textContent = `No. ${q.id}`;
+    
+    // 画像タグの変換を適用して問題文を表示
+    document.getElementById('q-text').innerHTML = formatText(q.text);
+    
+    const list = document.getElementById('opt-list');
+    list.innerHTML = '';
+    
+    // 選択肢の表示生成
+    let type = 'checkbox'; 
+    if(q.opts && q.opts.length > 0) {
+        q.opts.forEach(opt => {
+            const li = document.createElement('li');
+            li.innerHTML = `<label class="opt-label" onclick="toggle(this,'${type}')">
+                <input type="${type}" name="opt" value="${opt.id}"><span>${escapeHTML(opt.text)}</span></label>`;
+            list.appendChild(li);
+        });
+    }
+    
+    // 状態クリア
+    document.getElementById('exp-area').classList.remove('active');
+    document.getElementById('submit-btn').style.display = 'block';
+    
+    // 前後ボタンの制御
+    document.getElementById('prev-btn').disabled = idx === 0;
+    document.getElementById('next-btn').disabled = idx === filtered.length - 1;
+}
+
+function toggle(lbl, type) {
+    if(type === 'radio') {
+        document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+        lbl.classList.add('selected');
+    } else {
+        setTimeout(() => {
+            const chk = lbl.querySelector('input');
+            if(chk.checked) {
+                lbl.classList.add('selected');
+            } else {
+                lbl.classList.remove('selected');
+            }
+        }, 10);
+    }
+}
+
+function check() {
+    const q = filtered[idx];
+    const checkedBoxes = Array.from(document.querySelectorAll('input[name="opt"]:checked'));
+    
+    let userAnsStr = "選択なし";
+    if (checkedBoxes.length > 0 && checkedBoxes[0].value !== "none") {
+        userAnsStr = checkedBoxes.map(i => i.nextSibling.textContent.charAt(0)).join(', ');
+    }
+    
+    // 画像タグの変換を適用して解説を表示
+    document.getElementById('correct-ans').innerHTML = formatText(q.ansText) || "記載なし";
+    document.getElementById('exp-text').innerHTML = formatText(q.exp) || "解説の記載はありません。";
+    document.getElementById('user-ans').textContent = userAnsStr;
+    
+    document.getElementById('exp-area').classList.add('active');
+    document.getElementById('submit-btn').style.display = 'none';
+    
+    setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
+}
+
+function go(step) {
+    idx += step;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// モーダル（問題ジャンプ）の制御
+function openModal() {
+    if (!filtered.length) return;
+    const grid = document.getElementById('q-grid');
+    grid.innerHTML = '';
+    
+    filtered.forEach((q, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'q-grid-btn' + (i === idx ? ' current' : '');
+        btn.textContent = (i + 1);
+        btn.onclick = () => {
+            idx = i;
+            closeModal();
+            render();
+            window.scrollTo(0, 0);
+        };
+        grid.appendChild(btn);
+    });
+    
+    document.getElementById('q-modal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('q-modal').style.display = 'none';
+}
+</script>
+
+</body>
+</html>
